@@ -25,10 +25,11 @@ class BoundaryConvLayer(nn.Module):
         rate = F.softplus(self.rate(x)) + EPS
         gamma = self.rob_bound(x)
         x = self.fc(x)
+        z = x
         row, col = edge_index[0], edge_index[1]
         x = x[row] + x[col]
         x = scatter_sum(x, row, dim=0)
-        x = (rate * x + gamma) / (1 + rate * degree.unsqueeze(1) + EPS)
+        x = (rate * x + gamma) / (1 + rate * degree.unsqueeze(1) + EPS) - z
         x = self.norm(x)
         return self.act(x)
 
