@@ -12,8 +12,7 @@ class BoundaryConvLayer(nn.Module):
         super().__init__()
         self.fc = nn.Linear(in_dim, out_dim, bias=bias)
         self.act = act if act is not None else nn.Identity()
-        self.dir_bound = nn.Linear(in_dim, out_dim, bias=False)
-        self.neu_bound = nn.Linear(in_dim, out_dim, bias=False)
+        self.rate = nn.Linear(in_dim, out_dim, bias=False)
         self.rob_bound = nn.Linear(in_dim, out_dim, bias=True)
         self.norm = nn.LayerNorm(out_dim)
 
@@ -23,14 +22,13 @@ class BoundaryConvLayer(nn.Module):
         edge_index: 2 * E
         degrees: N
         """
-        alpha = F.softplus(self.dir_bound(x)) + EPS
-        beta = F.softplus(self.neu_bound(x)) + EPS
+        rate = F.softplus(self.rate(x)) + EPS
         gamma = self.rob_bound(x)
         x = self.fc(x)
         row, col = edge_index[0], edge_index[1]
         x = x[row] + x[col]
         x = scatter_sum(x, row, dim=0)
-        x = (beta * x + gamma) / (alpha + beta * degree.unsqueeze(1) + EPS)
+        x = (rate * x + gamma) / (1 + rate * degree.unsqueeze(1) + EPS)
         x = self.norm(x)
         return self.act(x)
 
