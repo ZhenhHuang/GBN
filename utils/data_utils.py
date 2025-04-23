@@ -1,5 +1,5 @@
 import torch
-from torch_geometric.datasets import Amazon, Coauthor, WebKB, Planetoid, WikipediaNetwork, GitHub, WikiCS
+from torch_geometric.datasets import Amazon, Coauthor, WebKB, Planetoid, WikipediaNetwork, GitHub, WikiCS, HeterophilousGraphDataset
 from torch_geometric.transforms import RandomNodeSplit, LargestConnectedComponents, Compose
 import os
 import warnings
@@ -32,6 +32,8 @@ def load_data(root: str, data_name: str,
         dataset = Coauthor(root, name=data_name, transform=transform)
     elif data_name in ["chameleon", "squirrel"]:
         dataset = WikipediaNetwork(root, name=data_name, transform=transform)
+    elif data_name in ["Amazon-ratings", "Roman-empire"]:
+        dataset = HeterophilousGraphDataset(root, data_name, transform)
     elif data_name in ['Cora', 'Citeseer', 'PubMed']:
         if num_per_class is None:
             num_per_class = 20

@@ -27,8 +27,8 @@ class Exp:
         self.logger = create_logger(configs.log_path)
 
     def load_model(self, dataset):
-        nc_model = BoundaryGCN(n_layers=2,
-                       in_dim=dataset.num_features, embed_dim=32,
+        nc_model = BoundaryGCN(n_layers=self.configs.n_layers,
+                       in_dim=dataset.num_features, embed_dim=self.configs.embed_dim,
                        out_dim=dataset.num_classes, bias=False, act=act_fn(self.configs.act)).to(self.device)
         return nc_model
 

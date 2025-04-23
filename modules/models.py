@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch_scatter import scatter_sum
 
 
-EPS = 1e-8
+EPS = 1e-4
 
 
 class BoundaryConvLayer(nn.Module):
@@ -12,8 +12,8 @@ class BoundaryConvLayer(nn.Module):
         super().__init__()
         self.fc = nn.Linear(in_dim, out_dim, bias=bias)
         self.act = act if act is not None else nn.Identity()
-        self.dir_bound = nn.Linear(in_dim, out_dim, bias=True)
-        self.neu_bound = nn.Linear(in_dim, out_dim, bias=True)
+        self.dir_bound = nn.Linear(in_dim, out_dim, bias=False)
+        self.neu_bound = nn.Linear(in_dim, out_dim, bias=False)
         self.rob_bound = nn.Linear(in_dim, out_dim, bias=True)
         self.norm = nn.LayerNorm(out_dim)
 
@@ -23,8 +23,8 @@ class BoundaryConvLayer(nn.Module):
         edge_index: 2 * E
         degrees: N
         """
-        alpha = F.sigmoid(self.dir_bound(x))
-        beta = F.sigmoid(self.neu_bound(x))
+        alpha = F.softplus(self.dir_bound(x)) + EPS
+        beta = F.softplus(self.neu_bound(x)) + EPS
         gamma = self.rob_bound(x)
         x = self.fc(x)
         row, col = edge_index[0], edge_index[1]
