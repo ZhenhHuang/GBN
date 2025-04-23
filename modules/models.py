@@ -25,8 +25,9 @@ class BoundaryConvLayer(nn.Module):
         """
         rate = self.drop(F.softplus(self.rate(x))) + EPS
         gamma = self.drop(self.rob_bound(x))
-        x = self.drop(self.fc(x))
+        x = self.fc(x)
         z = x
+        x = self.drop(x)
         row, col = edge_index[0], edge_index[1]
         x = x[row] + x[col]
         x = scatter_sum(x, row, dim=0)

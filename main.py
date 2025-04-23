@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(description='')
 # Experiment settings
 parser.add_argument('--task', type=str, default='NC',
                     choices=['NC', 'LP'])
-parser.add_argument('--dataset', type=str, default='squirrel',
+parser.add_argument('--dataset', type=str, default='WikiCS',
                     help="[Wisconsin, Texas, Cornell]")
 parser.add_argument('--root_path', type=str, default='./datasets')
 parser.add_argument('--val_every', type=int, default=10)
@@ -32,8 +32,8 @@ parser.add_argument('--checkpoints', type=str, default='./checkpoints/')
 
 # Base Params
 parser.add_argument('--n_layers', type=int, default=2)
-parser.add_argument('--embed_dim', type=int, default=32, help='embedding dimension')
-parser.add_argument('--dropout', type=float, default=0.0)
+parser.add_argument('--embed_dim', type=int, default=128, help='embedding dimension')
+parser.add_argument('--dropout', type=float, default=0.1)
 parser.add_argument('--act', type=str, default='relu', help='activation function')
 
 # Node Classification
