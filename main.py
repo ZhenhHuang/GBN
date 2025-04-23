@@ -18,15 +18,12 @@ parser = argparse.ArgumentParser(description='')
 # Experiment settings
 parser.add_argument('--task', type=str, default='NC',
                     choices=['NC', 'LP'])
-parser.add_argument('--dataset', type=str, default='Texas',
+parser.add_argument('--dataset', type=str, default='squirrel',
                     help="[Wisconsin, Texas, Cornell]")
 parser.add_argument('--root_path', type=str, default='./datasets')
 parser.add_argument('--val_every', type=int, default=10)
 parser.add_argument('--exp_iters', type=int, default=5)
 parser.add_argument('--log_path', type=str, default="./results/Physics.log")
-parser.add_argument('--epochs', type=int, default=50)
-parser.add_argument('--lr', type=float, default=0.01)
-parser.add_argument('--w_decay', type=float, default=0)
 parser.add_argument('--num_neighbors', type=int, nargs="+", default=[-1],
                     help="Number of neighbors of data_loaders")
 parser.add_argument('--batch_size', type=int, default=-1)
@@ -43,7 +40,7 @@ parser.add_argument('--act', type=str, default='relu', help='activation function
 parser.add_argument('--lr_nc', type=float, default=0.01)
 parser.add_argument('--weight_decay_nc', type=float, default=0)
 parser.add_argument('--epochs_nc', type=int, default=200)
-parser.add_argument('--patience_nc', type=int, default=3)
+parser.add_argument('--patience_nc', type=int, default=10)
 
 # Link Prediction
 parser.add_argument('--lr_lp', type=float, default=0.01)

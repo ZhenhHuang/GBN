@@ -39,9 +39,9 @@ def load_data(root: str, data_name: str,
         else:
             split = "random"
         dataset = Planetoid(root, name=data_name, split=split, num_train_per_class=num_per_class)
-    elif data_name == 'ogbn-arxiv':
-        dataset = PygNodePropPredDataset(name=data_name, root=root,
-                                         transform=RandomNodeSplit(num_val=0.2, num_test=0.3))
+    # elif data_name == 'ogbn-arxiv':
+    #     dataset = PygNodePropPredDataset(name=data_name, root=root,
+    #                                      transform=RandomNodeSplit(num_val=0.2, num_test=0.3))
     elif data_name == 'GitHub':
         dataset = GitHub(os.path.join(root, "GitHub"), transform=transform)
     elif data_name == "WikiCS":

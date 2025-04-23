@@ -35,7 +35,7 @@ class Exp:
     def load_data(self, split: str):
         dataset = load_data(root=self.configs.root_path, data_name=self.configs.dataset)
         data = dataset[0]
-        data.degree = degree(data.edge_idnex, data.num_nodes)
+        data.degree = degree(data.edge_index[0], data.num_nodes)
         batch_size = self.configs.batch_size if self.configs.batch_size != -1 else data.num_nodes
         train_loader = NeighborLoader(data, input_nodes=data.train_mask, batch_size=batch_size,
                                    num_neighbors=self.configs.num_neighbors)

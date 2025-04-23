@@ -175,3 +175,6 @@ cython_debug/
 
 # Dataset
 datasets/
+
+# model pt
+checkpoints/
