@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_scatter import scatter_sum
+from torch_geometric.nn import GraphNorm
 
 
 EPS = 1e-4
@@ -13,8 +14,10 @@ class BoundaryConvLayer(nn.Module):
         self.fc = nn.Linear(in_dim, out_dim, bias=bias)
         self.act = act if act is not None else nn.Identity()
         self.rate = nn.Linear(in_dim, out_dim, bias=False)
-        self.rob_bound = nn.Linear(in_dim, out_dim, bias=True)
-        self.norm = nn.LayerNorm(out_dim)
+        self.rob_bound = nn.Sequential(nn.Linear(in_dim, 512, bias=True),
+                                       nn.Softplus(),
+                                       nn.Linear(512, out_dim, bias=True))
+        self.norm = GraphNorm(out_dim)
         self.drop = nn.Dropout(drop)
 
     def forward(self, x, edge_index, degree):
@@ -31,9 +34,9 @@ class BoundaryConvLayer(nn.Module):
         row, col = edge_index[0], edge_index[1]
         x = x[row] + x[col]
         x = scatter_sum(x, row, dim=0)
-        x = (rate * x + gamma) / (1 + rate * degree.unsqueeze(1) + EPS) - z
+        x = (rate * x + gamma) / (1 + rate * degree.unsqueeze(1) + EPS) + z
         x = self.norm(x)
-        return self.act(x)
+        return self.drop(self.act(x))
 
 
 class BoundaryGCN(nn.Module):
