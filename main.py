@@ -32,6 +32,7 @@ parser.add_argument('--checkpoints', type=str, default='./checkpoints/')
 
 # Base Params
 parser.add_argument('--n_layers', type=int, default=3)
+parser.add_argument('--hid_dim', type=int, default=1024, help='hidden dimension')
 parser.add_argument('--embed_dim', type=int, default=128, help='embedding dimension')
 parser.add_argument('--dropout', type=float, default=0.1)
 parser.add_argument('--act', type=str, default='relu', help='activation function')
@@ -62,16 +63,16 @@ if not os.path.exists(results_dir):
     os.makedirs(results_dir, exist_ok=True)
 if configs.task_model_path is None:
     configs.task_model_path = f"{configs.task}_{configs.dataset}_model.pt"
-# json_dir = f"./configs/{configs.task}/{configs.dataset}"
-# json_path = f"{json_dir}/{list2str(configs.manifold)}.json"
-# if not os.path.exists(json_dir):
-#     os.makedirs(json_dir, exist_ok=True)
+json_dir = f"./configs/{configs.task}"
+json_path = f"{json_dir}/{configs.dataset}.json"
+if not os.path.exists(json_dir):
+    os.makedirs(json_dir, exist_ok=True)
 # times_dir = f"./results/times"
 # if not os.path.exists(times_dir):
 #     os.makedirs(times_dir, exist_ok=True)
 
-# print(f"Saving config file: {json_path}")
-# save_config(vars(configs), json_path)
+print(f"Saving config file: {json_path}")
+save_config(vars(configs), json_path)
 # if os.path.exists(json_path):
 #     print(f"Loading config file: {json_path}")
 #     configs = load_config(vars(configs), json_path)
