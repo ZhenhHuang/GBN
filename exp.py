@@ -97,11 +97,11 @@ class Exp:
             total_test_weighted_f1.append(weighted_f1)
             total_test_macro_f1.append(macro_f1)
         mean, std = np.mean(total_test_acc), np.std(total_test_acc)
-        self.logger.info(f"Evaluation Acc is {mean * 100: .2f}% +- {std * 100: .2f}%")
+        self.logger.info(f"Evaluation Acc is {mean * 100: .2f}% \u00B1 {std * 100: .2f}%")
         mean, std = np.mean(total_test_weighted_f1), np.std(total_test_weighted_f1)
-        self.logger.info(f"Evaluation weighted F1 is {mean * 100: .2f}% +- {std * 100: .2f}%")
+        self.logger.info(f"Evaluation weighted F1 is {mean * 100: .2f}% \u00B1 {std * 100: .2f}%")
         mean, std = np.mean(total_test_macro_f1), np.std(total_test_macro_f1)
-        self.logger.info(f"Evaluation macro F1 is {mean * 100: .2f}% +- {std * 100: .2f}%")
+        self.logger.info(f"Evaluation macro F1 is {mean * 100: .2f}% \u00B1 {std * 100: .2f}%")
 
     def val(self, nc_model, val_loader):
         nc_model.eval()
