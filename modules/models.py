@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_scatter import scatter_sum
 from torch_geometric.nn import GraphNorm
+from torch_geometric.utils import add_self_loops
 
 
 EPS = 1e-4
@@ -42,9 +43,9 @@ class BoundaryConvLayer(nn.Module):
         return x
 
     def aggregate(self, x, edge_index):
-        row, col = edge_index[0], edge_index[1]
-        x = x[row] + x[col]
-        x = scatter_sum(x, row, dim=0)
+        num_nodes = x.shape[0]
+        src, dst = edge_index[0], edge_index[1]
+        x = scatter_sum(x[src], dst, dim=0, dim_size=num_nodes)
         return x
 
 
@@ -61,7 +62,7 @@ class BoundaryGCN(nn.Module):
     def forward(self, data):
         x = data.x
         x = self.input_lin(x)
-        edge_index = data.edge_index
+        edge_index = add_self_loops(data.edge_index)[0]
         degree = data.degree
         for layer in self.layers:
             x = layer(x, edge_index, degree)
