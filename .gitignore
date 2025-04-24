@@ -178,3 +178,6 @@ datasets/
 
 # model pt
 checkpoints/
+
+# configs
+configs/
