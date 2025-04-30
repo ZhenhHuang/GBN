@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(description='')
 # Experiment settings
 parser.add_argument('--task', type=str, default='NC',
                     choices=['NC', 'LP'])
-parser.add_argument('--dataset', type=str, default='Wisconsin',
+parser.add_argument('--dataset', type=str, default='Amazon-ratings',
                     help="[Wisconsin, Texas, Cornell]")
 parser.add_argument('--root_path', type=str, default='./datasets')
 parser.add_argument('--val_every', type=int, default=10)
@@ -31,25 +31,18 @@ parser.add_argument('--task_model_path', type=str)  # necessary
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/')
 
 # Base Params
-parser.add_argument('--n_layers', type=int, default=5)
+parser.add_argument('--n_layers', type=int, default=10)
 parser.add_argument('--hid_dim', type=int, default=512, help='hidden dimension')
 parser.add_argument('--embed_dim', type=int, default=512, help='embedding dimension')
-parser.add_argument('--dropout', type=float, default=0.5)
+parser.add_argument('--dropout', type=float, default=0.1)
 parser.add_argument('--act', type=str, default='relu', help='activation function')
 
 # Node Classification
-parser.add_argument('--lr_nc', type=float, default=3e-5)
+parser.add_argument('--lr_nc', type=float, default=3e-4)
 parser.add_argument('--weight_decay_nc', type=float, default=0)
 parser.add_argument('--epochs_nc', type=int, default=2000)
-parser.add_argument('--patience_nc', type=int, default=100)
+parser.add_argument('--patience_nc', type=int, default=15)
 
-# Link Prediction
-parser.add_argument('--lr_lp', type=float, default=0.01)
-parser.add_argument('--w_decay_lp', type=float, default=0)
-parser.add_argument('--epochs_lp', type=int, default=200)
-parser.add_argument('--patience_lp', type=int, default=3)
-parser.add_argument('--t', type=float, default=1., help='for Fermi-Dirac decoder')
-parser.add_argument('--r', type=float, default=2., help='Fermi-Dirac decoder')
 # GPU
 parser.add_argument('--use_gpu', action='store_false', help='use gpu')
 parser.add_argument('--gpu', type=int, default=0, help='gpu')
@@ -71,8 +64,8 @@ if not os.path.exists(json_dir):
 # if not os.path.exists(times_dir):
 #     os.makedirs(times_dir, exist_ok=True)
 
-# print(f"Saving config file: {json_path}")
-# save_config(vars(configs), json_path)
+print(f"Saving config file: {json_path}")
+save_config(vars(configs), json_path)
 # if os.path.exists(json_path):
 #     print(f"Loading config file: {json_path}")
 #     configs = load_config(vars(configs), json_path)

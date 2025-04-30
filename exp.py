@@ -85,7 +85,7 @@ class Exp:
                                      f"val_acc={val_acc * 100: .2f}%,"
                                      f"val_weighted_f1={val_weighted_f1 * 100: .2f},"
                                      f"val_macro_f1={val_macro_f1 * 100: .2f}%")
-                    early_stop(val_loss, nc_model, self.configs.checkpoints, self.configs.task_model_path)
+                    early_stop(-val_acc, nc_model, self.configs.checkpoints, self.configs.task_model_path)
                     if early_stop.early_stop:
                         print("---------Early stopping--------")
                         break
@@ -97,6 +97,7 @@ class Exp:
             total_test_weighted_f1.append(weighted_f1)
             total_test_macro_f1.append(macro_f1)
         mean, std = np.mean(total_test_acc), np.std(total_test_acc)
+        self.logger.info(f"Best ACCs {total_test_acc}")
         self.logger.info(f"Evaluation Acc is {mean * 100: .2f}% \u00B1 {std * 100: .2f}%")
         mean, std = np.mean(total_test_weighted_f1), np.std(total_test_weighted_f1)
         self.logger.info(f"Evaluation weighted F1 is {mean * 100: .2f}% \u00B1 {std * 100: .2f}%")
