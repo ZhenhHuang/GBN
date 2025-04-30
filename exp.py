@@ -33,9 +33,16 @@ class Exp:
                                drop=self.configs.dropout).to(self.device)
         return nc_model
 
-    def load_data(self):
+    def load_data(self, cur_split=0):
         dataset = load_data(root=self.configs.root_path, data_name=self.configs.dataset)
-        data = dataset[0]
+        data = dataset[0].clone()
+        if data.train_mask.ndim > 1:
+            num_mask = data.train_mask.shape[1]
+        else:
+            num_mask = 1
+        data.train_mask = data.train_mask[:, cur_split % num_mask] if num_mask > 1 else data.train_mask
+        data.val_mask = data.val_mask[:, cur_split % num_mask] if num_mask > 1 else data.val_mask
+        data.test_mask = data.test_mask[:, cur_split % num_mask] if num_mask > 1 else data.test_mask
         data.degree = degree(data.edge_index[0], data.num_nodes)
         return dataset, data
 
@@ -45,7 +52,7 @@ class Exp:
         total_test_macro_f1 = []
         self.logger.info("--------------------------Training Start-------------------------")
         for t in range(self.configs.exp_iters):
-            dataset, data = self.load_data()
+            dataset, data = self.load_data(cur_split=t)
             nc_model = self.load_model(dataset)
             nc_model.train()
             optimizer = Adam(nc_model.parameters(), lr=self.configs.lr_nc,

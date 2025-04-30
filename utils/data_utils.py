@@ -8,12 +8,11 @@ warnings.filterwarnings('ignore')
 
 def load_data(root: str, data_name: str):
     if data_name in ["Texas", "Wisconsin", "Cornell"]:
-        dataset = WebKB(root, name=data_name, transform=Compose([LargestConnectedComponents(),
-                                                                 get_split(num_val=0.25, num_test=0.25)]))
+        dataset = WebKB(root, name=data_name, transform=LargestConnectedComponents())
     elif data_name in ["chameleon", "squirrel"]:
-        dataset = WikipediaNetwork(root, name=data_name, transform=get_split(num_val=0.25, num_test=0.25))
+        dataset = WikipediaNetwork(root, name=data_name)
     elif data_name in ["Amazon-ratings", "Roman-empire"]:
-        dataset = HeterophilousGraphDataset(root, data_name, get_split(num_val=0.25, num_test=0.25))
+        dataset = HeterophilousGraphDataset(root, data_name)
     elif data_name in ["computers", "photo"]:
         dataset = Amazon(root, name=data_name, transform=get_split(num_val=0.2, num_test=0.2))
     elif data_name in ["CS", "Physics"]:
