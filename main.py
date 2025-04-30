@@ -18,15 +18,12 @@ parser = argparse.ArgumentParser(description='')
 # Experiment settings
 parser.add_argument('--task', type=str, default='NC',
                     choices=['NC', 'LP'])
-parser.add_argument('--dataset', type=str, default='Amazon-ratings',
+parser.add_argument('--dataset', type=str, default='Texas',
                     help="[Wisconsin, Texas, Cornell]")
 parser.add_argument('--root_path', type=str, default='./datasets')
 parser.add_argument('--val_every', type=int, default=10)
-parser.add_argument('--exp_iters', type=int, default=5)
+parser.add_argument('--exp_iters', type=int, default=10)
 parser.add_argument('--log_path', type=str, default="./results/Physics.log")
-parser.add_argument('--num_neighbors', type=int, nargs="+", default=[-1],
-                    help="Number of neighbors of data_loaders")
-parser.add_argument('--batch_size', type=int, default=-1)
 parser.add_argument('--task_model_path', type=str)  # necessary
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/')
 
@@ -64,14 +61,11 @@ if not os.path.exists(json_dir):
 # if not os.path.exists(times_dir):
 #     os.makedirs(times_dir, exist_ok=True)
 
-print(f"Saving config file: {json_path}")
-save_config(vars(configs), json_path)
-# if os.path.exists(json_path):
-#     print(f"Loading config file: {json_path}")
-#     configs = load_config(vars(configs), json_path)
-# else:
-#     print(f"Saving config file: {json_path}")
-#     save_config(vars(configs), json_path)
+# print(f"Saving config file: {json_path}")
+# save_config(vars(configs), json_path)
+if os.path.exists(json_path):
+    print(f"Loading config file: {json_path}")
+    configs = load_config(vars(configs), json_path)
 
 print(f"Log path: {configs.log_path}")
 logger = create_logger(configs.log_path)
