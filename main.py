@@ -68,15 +68,13 @@ json_dir = f"./configs/{configs.task}"
 json_path = f"{json_dir}/{configs.dataset}.json"
 if not os.path.exists(json_dir):
     os.makedirs(json_dir, exist_ok=True)
-# times_dir = f"./results/times"
-# if not os.path.exists(times_dir):
-#     os.makedirs(times_dir, exist_ok=True)
 
-# print(f"Saving config file: {json_path}")
-# save_config(vars(configs), json_path)
 if os.path.exists(json_path):
     print(f"Loading config file: {json_path}")
     configs = load_config(vars(configs), json_path)
+else:
+    print(f"Saving config file: {json_path}")
+    save_config(vars(configs), json_path)
 
 print(f"Log path: {configs.log_path}")
 logger = create_logger(configs.log_path)
