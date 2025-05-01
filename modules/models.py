@@ -17,13 +17,13 @@ class BoundaryConvLayer(nn.Module):
                                 ActivateModule(act),
                                 nn.Linear(hid_dim, out_dim),
                                 nn.Dropout(drop))
-        self.rate = nn.Sequential(nn.Linear(in_dim, in_dim, bias=False),
+        self.rate = nn.Sequential(nn.Linear(in_dim, in_dim, bias=bias),
                                   nn.Softplus(),
                                   nn.Dropout(drop))
-        self.rob_bound = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=True),
+        self.rob_bound = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
                                        nn.Dropout(drop),
-                                       ActivateModule(act),
-                                       nn.Linear(hid_dim, in_dim, bias=True),
+                                       nn.Softplus(),
+                                       nn.Linear(hid_dim, in_dim, bias=bias),
                                        nn.LayerNorm(in_dim))
         self.norm = nn.LayerNorm(in_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
 
@@ -51,12 +51,12 @@ class BoundaryConvLayer(nn.Module):
 class BoundaryGCN(nn.Module):
     def __init__(self, n_layers, in_dim, hid_dim, embed_dim, out_dim, bias, input_act, act, drop=0.3, norm='ln'):
         super().__init__()
-        self.input_lin = nn.Sequential(nn.Linear(in_dim, embed_dim),
+        self.input_lin = nn.Sequential(nn.Linear(in_dim, embed_dim, bias=bias),
                                        nn.Dropout(drop),
                                        ActivateModule(input_act))
         self.layers = nn.ModuleList([BoundaryConvLayer(embed_dim, hid_dim, embed_dim, bias, act, drop, norm) for _ in range(n_layers)])
         self.out_norm = nn.LayerNorm(embed_dim) if norm == 'ln' else nn.BatchNorm1d(embed_dim)
-        self.out_lin = nn.Linear(embed_dim, out_dim)
+        self.out_lin = nn.Linear(embed_dim, out_dim, bias=bias)
         self.drop = nn.Dropout(drop)
 
     def forward(self, data):

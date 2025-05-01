@@ -29,7 +29,7 @@ class Exp:
         nc_model = BoundaryGCN(n_layers=self.configs.n_layers,
                        in_dim=dataset.num_features, hid_dim=self.configs.hid_dim,
                                embed_dim=self.configs.embed_dim, out_dim=dataset.num_classes,
-                               bias=False, act=self.configs.act, input_act=self.configs.input_act,
+                               bias=self.configs.bias, act=self.configs.act, input_act=self.configs.input_act,
                                drop=self.configs.dropout, norm=self.configs.norm).to(self.device)
         return nc_model
 

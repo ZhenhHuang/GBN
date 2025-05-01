@@ -32,15 +32,16 @@ parser.add_argument('--n_layers', type=int, default=5)
 parser.add_argument('--hid_dim', type=int, default=512, help='hidden dimension')
 parser.add_argument('--embed_dim', type=int, default=512, help='embedding dimension')
 parser.add_argument('--dropout', type=float, default=0.5)
-parser.add_argument('--act', type=str, default='relu', help='activation function')
+parser.add_argument('--act', type=str, default='gelu', help='activation function')
 parser.add_argument('--input_act', type=str, default='gelu', help='activation function for input layer')
 parser.add_argument('--norm', type=str, default='ln', help='Normalization of Batch Norm or Layer Norm')
+parser.add_argument('--bias', action='store_false', help='use bias for linear layer')
 
 # Node Classification
 parser.add_argument('--lr_nc', type=float, default=3e-5)
 parser.add_argument('--weight_decay_nc', type=float, default=0)
 parser.add_argument('--epochs_nc', type=int, default=2000)
-parser.add_argument('--patience_nc', type=int, default=15)
+parser.add_argument('--patience_nc', type=int, default=100)
 
 # GPU
 parser.add_argument('--use_gpu', action='store_false', help='use gpu')
