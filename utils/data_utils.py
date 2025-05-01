@@ -164,7 +164,7 @@ def ring_transfer_graph(distance, channels, add_crosses: bool):
     edge_index.append([n_nodes - 1, 0])
 
     # Convert edge list to a torch tensor
-    edge_index = np.array(edge_index, dtype=np.long).T
+    edge_index = np.array(edge_index, dtype=np.int32).T
     edge_index = torch.tensor(edge_index, dtype=torch.long)
 
     y = x.clone()
