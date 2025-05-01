@@ -1,5 +1,4 @@
 import torch
-import numpy as np
 import torch.nn.functional as F
 from torch.optim import Adam
 from utils.data_utils import load_data
@@ -20,8 +19,8 @@ class GraphTransferExp:
             self.device = torch.device('cpu')
         self.logger = create_logger(configs.log_path)
 
-    def load_model(self):
-        nc_model = BoundaryGCN(n_layers=self.configs.n_layers,
+    def load_model(self, distance):
+        nc_model = BoundaryGCN(n_layers=self.configs.additional_layers + distance,
                        in_dim=1, hid_dim=self.configs.hid_dim,
                                embed_dim=self.configs.embed_dim, out_dim=1,
                                bias=self.configs.bias, act=self.configs.act, input_act=self.configs.input_act,
@@ -42,7 +41,7 @@ class GraphTransferExp:
             train_set, train_loader = self.load_data('train', dist)
             val_set, val_loader = self.load_data('val', dist)
             test_set, test_loader = self.load_data('test', dist)
-            model = self.load_model()
+            model = self.load_model(dist)
             model.train()
             optimizer = Adam(model.parameters(), lr=self.configs.lr_trans,
                              weight_decay=self.configs.weight_decay_trans)

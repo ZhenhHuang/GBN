@@ -15,9 +15,9 @@ set_seed(3047)
 parser = argparse.ArgumentParser(description='')
 
 # Experiment settings
-parser.add_argument('--task', type=str, default='NC',
+parser.add_argument('--task', type=str, default='Transfer',
                     choices=['NC', 'Transfer'])
-parser.add_argument('--dataset', type=str, default='Texas',
+parser.add_argument('--dataset', type=str, default='Line',
                     help="[Wisconsin, Texas, Cornell]")
 parser.add_argument('--root_path', type=str, default='./datasets')
 parser.add_argument('--val_every', type=int, default=10)
@@ -44,6 +44,7 @@ parser.add_argument('--epochs_nc', type=int, default=2000)
 parser.add_argument('--patience_nc', type=int, default=100)
 
 # Graph Transfer
+parser.add_argument('--additional_layers', type=int, default=0)
 parser.add_argument('--distance_list', type=int, nargs="+", default=[50, 10, 5, 3])
 parser.add_argument('--batch_size', type=int, default=32)
 parser.add_argument('--lr_trans', type=float, default=3e-5)
