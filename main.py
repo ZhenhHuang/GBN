@@ -32,7 +32,7 @@ parser.add_argument('--add_self_loop', action='store_true', help='add self loop 
 parser.add_argument('--n_layers', type=int, default=5)
 parser.add_argument('--hid_dim', type=int, default=64, help='hidden dimension')
 parser.add_argument('--embed_dim', type=int, default=64, help='embedding dimension')
-parser.add_argument('--dropout', type=float, default=0.1)
+parser.add_argument('--dropout', type=float, default=0.0)
 parser.add_argument('--act', type=str, default='tanh', help='activation function')
 parser.add_argument('--input_act', type=str, default='tanh', help='activation function for input layer')
 parser.add_argument('--norm', type=str, default='bn', help='Normalization of Batch Norm or Layer Norm')
