@@ -30,19 +30,13 @@ class Exp:
                        in_dim=dataset.num_features, hid_dim=self.configs.hid_dim,
                                embed_dim=self.configs.embed_dim, out_dim=dataset.num_classes,
                                bias=self.configs.bias, act=self.configs.act, input_act=self.configs.input_act,
-                               drop=self.configs.dropout, norm=self.configs.norm).to(self.device)
+                               drop=self.configs.dropout, norm=self.configs.norm,
+                               add_self_loop=self.configs.add_self_loop).to(self.device)
         return nc_model
 
-    def load_data(self, cur_split=0):
-        dataset = load_data(root=self.configs.root_path, data_name=self.configs.dataset)
+    def load_data(self):
+        dataset = load_data(root=self.configs.root_path, data_name=self.configs.dataset, num_splits=self.configs.exp_iters)
         data = dataset[0].clone()
-        if data.train_mask.ndim > 1:
-            num_mask = data.train_mask.shape[1]
-        else:
-            num_mask = 1
-        data.train_mask = data.train_mask[:, cur_split % num_mask] if num_mask > 1 else data.train_mask
-        data.val_mask = data.val_mask[:, cur_split % num_mask] if num_mask > 1 else data.val_mask
-        data.test_mask = data.test_mask[:, cur_split % num_mask] if num_mask > 1 else data.test_mask
         data.degree = degree(data.edge_index[0], data.num_nodes)
         return dataset, data
 
@@ -51,8 +45,8 @@ class Exp:
         total_test_weighted_f1 = []
         total_test_macro_f1 = []
         self.logger.info("--------------------------Training Start-------------------------")
+        dataset, data = self.load_data()
         for t in range(self.configs.exp_iters):
-            dataset, data = self.load_data(cur_split=t)
             nc_model = self.load_model(dataset)
             nc_model.train()
             optimizer = Adam(nc_model.parameters(), lr=self.configs.lr_nc,
@@ -62,7 +56,7 @@ class Exp:
                 epoch_loss = []
 
                 data = data.to(self.device)
-                loss, pred, true = self.train_step(nc_model, data, optimizer)
+                loss, pred, true = self.train_step(nc_model, data, optimizer, split=t)
                 epoch_loss.append(loss)
 
                 train_loss = np.mean(epoch_loss)
@@ -71,7 +65,7 @@ class Exp:
                 self.logger.info(f"Epoch {epoch}: train_loss={train_loss}, train_acc={train_acc * 100: .2f}%")
 
                 if epoch % self.configs.val_every == 0:
-                    val_loss, val_acc, val_weighted_f1, val_macro_f1 = self.val(nc_model, data)
+                    val_loss, val_acc, val_weighted_f1, val_macro_f1 = self.val(nc_model, data, split=t)
                     self.logger.info(f"Epoch {epoch}: val_loss={val_loss}, "
                                      f"val_acc={val_acc * 100: .2f}%,"
                                      f"val_weighted_f1={val_weighted_f1 * 100: .2f},"
@@ -80,7 +74,7 @@ class Exp:
                     if early_stop.early_stop:
                         print("---------Early stopping--------")
                         break
-            test_acc, weighted_f1, macro_f1 = self.test(nc_model, data)
+            test_acc, weighted_f1, macro_f1 = self.test(nc_model, split=t, data=data)
             self.logger.info(f"test_acc={test_acc * 100: .2f}%, "
                              f"weighted_f1={weighted_f1 * 100: .2f},"
                              f"macro_f1={macro_f1 * 100: .2f}%")
@@ -95,28 +89,20 @@ class Exp:
         mean, std = np.mean(total_test_macro_f1), np.std(total_test_macro_f1)
         self.logger.info(f"Evaluation macro F1 is {mean * 100: .2f}% \u00B1 {std * 100: .2f}%")
 
-    def val(self, nc_model, data):
-        nc_model.eval()
-        with torch.no_grad():
-            data = data.to(self.device)
-            out = nc_model(data)
-            loss, pred, true = self.cal_loss(out, data.y, data.val_mask)
+    def val(self, nc_model, data, split: int):
+        loss, pred, true = self.test_step(nc_model, data, data.val_mask[:, split])
         acc = cal_accuracy(pred, true)
         weighted_f1, macro_f1 = cal_F1(pred, true)
         nc_model.train()
         return loss, acc, weighted_f1, macro_f1
 
-    def test(self, nc_model, data=None):
+    def test(self, nc_model, split: int, data=None):
         data = self.load_data()[1] if data is None else data
-        nc_model.eval()
         self.logger.info("--------------Testing--------------------")
         path = os.path.join(self.configs.checkpoints, self.configs.task_model_path)
         self.logger.info(f"--------------Loading from {path}--------------------")
         nc_model.load_state_dict(torch.load(path))
-        with torch.no_grad():
-            data = data.to(self.device)
-            out = nc_model(data)
-            loss, pred, true = self.cal_loss(out, data.y, data.test_mask)
+        _, pred, true = self.test_step(nc_model, data, data.test_mask[:, split])
         test_acc = cal_accuracy(pred, true)
         weighted_f1, macro_f1 = cal_F1(pred, true)
         self.logger.info(f"test_acc={test_acc * 100: .2f}%, "
@@ -124,12 +110,20 @@ class Exp:
                          f"macro_f1={macro_f1 * 100: .2f}%")
         return test_acc, weighted_f1, macro_f1
 
-    def train_step(self, nc_model, data, optimizer):
+    def train_step(self, nc_model, data, optimizer, split: int):
         optimizer.zero_grad()
         out = nc_model(data)
-        loss, pred, true = self.cal_loss(out, data.y, data.train_mask)
+        loss, pred, true = self.cal_loss(out, data.y, data.train_mask[:, split])
         loss.backward()
         optimizer.step()
+        return loss.item(), pred, true
+
+    def test_step(self, nc_model, data, mask):
+        nc_model.eval()
+        with torch.no_grad():
+            data = data.to(self.device)
+            out = nc_model(data)
+            loss, pred, true = self.cal_loss(out, data.y, mask)
         return loss.item(), pred, true
 
     @staticmethod
