@@ -22,20 +22,21 @@ parser.add_argument('--dataset', type=str, default='line',
 parser.add_argument('--root_path', type=str, default='./datasets')
 parser.add_argument('--val_every', type=int, default=10)
 parser.add_argument('--exp_iters', type=int, default=10)
-parser.add_argument('--log_path', type=str, default="./results/Physics.log")
+parser.add_argument('--log_dir', type=str, default="./logs/")
+parser.add_argument('--result_dir', type=str, default="./results/")
 parser.add_argument('--task_model_path', type=str)  # necessary
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/')
 
 # Base Params
-parser.add_argument('--add_self_loop', action='store_false', help='add self loop to adjacency')
+parser.add_argument('--add_self_loop', action='store_true', help='add self loop to adjacency')
 parser.add_argument('--n_layers', type=int, default=5)
-parser.add_argument('--hid_dim', type=int, default=32, help='hidden dimension')
-parser.add_argument('--embed_dim', type=int, default=32, help='embedding dimension')
+parser.add_argument('--hid_dim', type=int, default=64, help='hidden dimension')
+parser.add_argument('--embed_dim', type=int, default=64, help='embedding dimension')
 parser.add_argument('--dropout', type=float, default=0.1)
-parser.add_argument('--act', type=str, default='gelu', help='activation function')
-parser.add_argument('--input_act', type=str, default='gelu', help='activation function for input layer')
-parser.add_argument('--norm', type=str, default='ln', help='Normalization of Batch Norm or Layer Norm')
-parser.add_argument('--bias', action='store_true', help='use bias for linear layer')
+parser.add_argument('--act', type=str, default='tanh', help='activation function')
+parser.add_argument('--input_act', type=str, default='tanh', help='activation function for input layer')
+parser.add_argument('--norm', type=str, default='bn', help='Normalization of Batch Norm or Layer Norm')
+parser.add_argument('--bias', action='store_false', help='use bias for linear layer')
 
 # Node Classification
 parser.add_argument('--lr_nc', type=float, default=3e-5)
@@ -57,11 +58,19 @@ parser.add_argument('--gpu', type=int, default=0, help='gpu')
 parser.add_argument('--devices', type=str, default='0,1', help='device ids of multiple gpus')
 
 configs = parser.parse_args()
-results_dir = f"./results/logs"
-log_path = f"{results_dir}/{configs.task}_{configs.dataset}.log"
+
+if not os.path.exists(configs.log_dir):
+    os.makedirs(configs.log_dir, exist_ok=True)
+log_path = (f"{configs.log_dir}/{configs.task}_{configs.dataset}"
+            f"_NL{configs.n_layers}_HD{configs.hid_dim}_DP{configs.dropout}_ACT{configs.act}"
+            f"_NORM{configs.norm}_B{configs.bias}_LRNC{configs.lr_nc}_LRT{configs.lr_trans}.log")
 configs.log_path = log_path
-if not os.path.exists(results_dir):
-    os.makedirs(results_dir, exist_ok=True)
+
+if not os.path.exists(configs.result_dir):
+    os.makedirs(configs.result_dir, exist_ok=True)
+result_path = f"{configs.result_dir}/{configs.task}.txt"
+configs.result_path = result_path
+
 if configs.task_model_path is None:
     configs.task_model_path = f"{configs.task}_{configs.dataset}_model.pt"
 json_dir = f"./configs/{configs.task}"

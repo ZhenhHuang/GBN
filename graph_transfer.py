@@ -9,6 +9,8 @@ from torch_geometric.loader import DataLoader
 from modules.models import BoundaryGCN
 from torch_geometric.utils import degree
 from tqdm import tqdm
+import numpy as np
+from collections import defaultdict
 
 
 class GraphTransferExp:
@@ -22,7 +24,7 @@ class GraphTransferExp:
 
     def load_model(self, distance):
         nc_model = BoundaryGCN(n_layers=self.configs.additional_layers + distance,
-                       in_dim=1, hid_dim=self.configs.hid_dim,
+                               in_dim=1, hid_dim=self.configs.hid_dim,
                                embed_dim=self.configs.embed_dim, out_dim=1,
                                bias=self.configs.bias, act=self.configs.act, input_act=self.configs.input_act,
                                drop=self.configs.dropout, norm=self.configs.norm,
@@ -36,40 +38,48 @@ class GraphTransferExp:
         return dataset, loader
 
     def train(self):
-        total_mse = {}
+        total_mse = defaultdict(list)
         self.logger.info("--------------------------Training Start-------------------------")
-        for dist in self.configs.distance_list:
-            train_set, train_loader = self.load_data('train', dist)
-            val_set, val_loader = self.load_data('val', dist)
-            test_set, test_loader = self.load_data('test', dist)
-            model = self.load_model(dist)
-            model.train()
-            optimizer = Adam(model.parameters(), lr=self.configs.lr_trans,
-                             weight_decay=self.configs.weight_decay_trans)
-            early_stop = EarlyStopping(self.configs.patience_trans)
-            for epoch in range(self.configs.epochs_trans):
-                train_loss = 0
-                for data in tqdm(train_loader):
-                    data.degree = degree(data.edge_index[0], data.num_nodes)
-                    data = data.to(self.device)
-                    train_loss += self.train_step(model, data, optimizer)
+        for t in range(self.configs.exp_iters):
+            for dist in self.configs.distance_list:
+                train_set, train_loader = self.load_data('train', dist)
+                val_set, val_loader = self.load_data('val', dist)
+                test_set, test_loader = self.load_data('test', dist)
+                model = self.load_model(dist)
+                model.train()
+                optimizer = Adam(model.parameters(), lr=self.configs.lr_trans,
+                                 weight_decay=self.configs.weight_decay_trans)
+                early_stop = EarlyStopping(self.configs.patience_trans)
+                for epoch in range(self.configs.epochs_trans):
+                    train_loss = 0
+                    for data in tqdm(train_loader):
+                        data.degree = degree(data.edge_index[0], data.num_nodes)
+                        data = data.to(self.device)
+                        train_loss += self.train_step(model, data, optimizer)
 
-                train_loss = train_loss / len(train_loader)
+                    train_loss = train_loss / len(train_loader)
 
-                self.logger.info(f"Epoch {epoch}: train_loss={train_loss}")
+                    self.logger.info(f"Epoch {epoch}: train_loss={train_loss}")
 
-                if epoch % self.configs.val_every == 0:
-                    val_loss = self.val(model, val_loader)
-                    self.logger.info(f"Epoch {epoch}: val_mse={val_loss}")
-                    early_stop(val_loss, model, self.configs.checkpoints, self.configs.task_model_path)
-                    if early_stop.early_stop:
-                        print("---------Early stopping--------")
-                        break
-            test_mse = self.test(model, test_loader, distance=dist)
-            self.logger.info(f"test_mse={test_mse}")
-            total_mse[dist] = test_mse
+                    if epoch % self.configs.val_every == 0:
+                        val_loss = self.val(model, val_loader)
+                        self.logger.info(f"Epoch {epoch}: val_mse={val_loss}")
+                        early_stop(val_loss, model, self.configs.checkpoints, self.configs.task_model_path)
+                        if early_stop.early_stop:
+                            print("---------Early stopping--------")
+                            break
+                test_mse = self.test(model, test_loader, distance=dist)
+                self.logger.info(f"test_mse={test_mse}")
+                total_mse[dist].append(test_mse)
+            for k, v in total_mse.items():
+                self.logger.info(f"Iter {t}: Distance {k}: {v}" )
+        res_str = ""
         for k, v in total_mse.items():
-            self.logger.info(f"Distance {k}: {v}" )
+            res_str += f"Final Result: Distance {k}: {np.mean(v)} \u00B1 {np.std(v)} \n"
+        self.logger.info(res_str)
+        with open(self.configs.result_path, 'a') as f:
+            f.write(res_str)
+        f.close()
 
     def val(self, model, val_loader):
         loss = 0
@@ -94,7 +104,7 @@ class GraphTransferExp:
             data = data.to(self.device)
             loss += self.test_step(model, data)
         loss = loss / len(test_loader)
-        self.logger.info(f"test_mse={loss}%")
+        self.logger.info(f"test_mse={loss}")
         return loss
 
     @staticmethod

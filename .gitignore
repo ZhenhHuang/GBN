@@ -181,3 +181,5 @@ checkpoints/
 
 # configs
 configs/
+results/
+logs/
