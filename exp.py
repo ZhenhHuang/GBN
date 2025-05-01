@@ -1,18 +1,14 @@
 import torch
 import numpy as np
 import torch.nn.functional as F
-import torch.nn as nn
 from torch.optim import Adam
-from utils.eval_utils import cal_accuracy, cal_F1, cal_AUC_AP
+from utils.eval_utils import cal_accuracy, cal_F1
 from utils.data_utils import load_data
 from utils.train_utils import EarlyStopping
 from logger import create_logger
-from utils.config import list2str
-import time
 import os
 
 from modules.models import BoundaryGCN
-from torch_geometric.loader import NeighborLoader, LinkNeighborLoader, DataLoader
 from torch_geometric.utils import degree
 
 
