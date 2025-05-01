@@ -5,17 +5,19 @@ import torch.nn as nn
 import os
 
 
-def act_fn(act_str: str):
+def ActivateModule(act_str: str):
     if act_str == 'relu':
-        return F.relu
+        return nn.ReLU()
     elif act_str == 'leaky_relu':
-        return lambda x: F.leaky_relu(x, negative_slope=0.2, inplace=True)
+        return nn.LeakyReLU(negative_slope=0.2, inplace=True)
     elif act_str == 'tanh':
-        return F.tanh
+        return nn.Tanh()
     elif act_str == 'elu':
-        return F.elu
+        return nn.ELU()
+    elif act_str == 'gelu':
+        return nn.GELU()
     elif act_str is None:
-        return lambda x: nn.Identity()(x)
+        return nn.Identity()
     else:
         raise NotImplementedError
 

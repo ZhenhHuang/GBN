@@ -2,31 +2,30 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_scatter import scatter_sum
-from torch_geometric.nn import GraphNorm
 from torch_geometric.utils import add_self_loops
+from utils.train_utils import ActivateModule
 
 
 EPS = 1e-4
 
 
 class BoundaryConvLayer(nn.Module):
-    def __init__(self, in_dim, hid_dim, out_dim, bias, act=None, drop=0.3):
+    def __init__(self, in_dim, hid_dim, out_dim, bias, act='gelu', drop=0.3, norm='ln'):
         super().__init__()
         self.fc = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
                                 nn.Dropout(drop),
-                                nn.GELU(),
+                                ActivateModule(act),
                                 nn.Linear(hid_dim, out_dim),
                                 nn.Dropout(drop))
-        self.act = act if act is not None else nn.Identity()
         self.rate = nn.Sequential(nn.Linear(in_dim, in_dim, bias=False),
                                   nn.Softplus(),
                                   nn.Dropout(drop))
         self.rob_bound = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=True),
                                        nn.Dropout(drop),
-                                       nn.Softplus(),
+                                       ActivateModule(act),
                                        nn.Linear(hid_dim, in_dim, bias=True),
                                        nn.LayerNorm(in_dim))
-        self.norm = nn.LayerNorm(in_dim)
+        self.norm = nn.LayerNorm(in_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
 
     def forward(self, x, edge_index, degree):
         """
@@ -50,18 +49,20 @@ class BoundaryConvLayer(nn.Module):
 
 
 class BoundaryGCN(nn.Module):
-    def __init__(self, n_layers, in_dim, hid_dim, embed_dim, out_dim, bias, act, drop=0.3):
+    def __init__(self, n_layers, in_dim, hid_dim, embed_dim, out_dim, bias, input_act, act, drop=0.3, norm='ln'):
         super().__init__()
         self.input_lin = nn.Sequential(nn.Linear(in_dim, embed_dim),
                                        nn.Dropout(drop),
-                                       nn.GELU())
-        self.layers = nn.ModuleList([BoundaryConvLayer(embed_dim, hid_dim, embed_dim, bias, act, drop) for _ in range(n_layers)])
-        self.out_norm = nn.LayerNorm(embed_dim)
+                                       ActivateModule(input_act))
+        self.layers = nn.ModuleList([BoundaryConvLayer(embed_dim, hid_dim, embed_dim, bias, act, drop, norm) for _ in range(n_layers)])
+        self.out_norm = nn.LayerNorm(embed_dim) if norm == 'ln' else nn.BatchNorm1d(embed_dim)
         self.out_lin = nn.Linear(embed_dim, out_dim)
+        self.drop = nn.Dropout(drop)
 
     def forward(self, data):
         x = data.x
         x = self.input_lin(x)
+        x = self.drop(x)
         edge_index = add_self_loops(data.edge_index)[0]
         degree = data.degree
         for layer in self.layers:

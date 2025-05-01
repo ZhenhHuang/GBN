@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(description='')
 # Experiment settings
 parser.add_argument('--task', type=str, default='NC',
                     choices=['NC', 'LP'])
-parser.add_argument('--dataset', type=str, default='Wisconsin',
+parser.add_argument('--dataset', type=str, default='Texas',
                     help="[Wisconsin, Texas, Cornell]")
 parser.add_argument('--root_path', type=str, default='./datasets')
 parser.add_argument('--val_every', type=int, default=10)
@@ -28,14 +28,16 @@ parser.add_argument('--task_model_path', type=str)  # necessary
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/')
 
 # Base Params
-parser.add_argument('--n_layers', type=int, default=10)
+parser.add_argument('--n_layers', type=int, default=5)
 parser.add_argument('--hid_dim', type=int, default=512, help='hidden dimension')
 parser.add_argument('--embed_dim', type=int, default=512, help='embedding dimension')
-parser.add_argument('--dropout', type=float, default=0.1)
+parser.add_argument('--dropout', type=float, default=0.5)
 parser.add_argument('--act', type=str, default='relu', help='activation function')
+parser.add_argument('--input_act', type=str, default='gelu', help='activation function for input layer')
+parser.add_argument('--norm', type=str, default='ln', help='Normalization of Batch Norm or Layer Norm')
 
 # Node Classification
-parser.add_argument('--lr_nc', type=float, default=3e-4)
+parser.add_argument('--lr_nc', type=float, default=3e-5)
 parser.add_argument('--weight_decay_nc', type=float, default=0)
 parser.add_argument('--epochs_nc', type=int, default=2000)
 parser.add_argument('--patience_nc', type=int, default=15)

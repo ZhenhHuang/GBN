@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.optim import Adam
 from utils.eval_utils import cal_accuracy, cal_F1, cal_AUC_AP
 from utils.data_utils import load_data
-from utils.train_utils import EarlyStopping, act_fn
+from utils.train_utils import EarlyStopping
 from logger import create_logger
 from utils.config import list2str
 import time
@@ -29,8 +29,8 @@ class Exp:
         nc_model = BoundaryGCN(n_layers=self.configs.n_layers,
                        in_dim=dataset.num_features, hid_dim=self.configs.hid_dim,
                                embed_dim=self.configs.embed_dim, out_dim=dataset.num_classes,
-                               bias=False, act=act_fn(self.configs.act),
-                               drop=self.configs.dropout).to(self.device)
+                               bias=False, act=self.configs.act, input_act=self.configs.input_act,
+                               drop=self.configs.dropout, norm=self.configs.norm).to(self.device)
         return nc_model
 
     def load_data(self, cur_split=0):
