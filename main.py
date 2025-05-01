@@ -44,6 +44,7 @@ parser.add_argument('--epochs_nc', type=int, default=2000)
 parser.add_argument('--patience_nc', type=int, default=100)
 
 # Graph Transfer
+parser.add_argument('--distance_list', type=int, nargs="+", default=[50, 10, 5, 3])
 parser.add_argument('--batch_size', type=int, default=32)
 parser.add_argument('--lr_trans', type=float, default=3e-5)
 parser.add_argument('--weight_decay_trans', type=float, default=0)

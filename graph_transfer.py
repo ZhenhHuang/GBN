@@ -38,7 +38,7 @@ class GraphTransferExp:
     def train(self):
         total_mse = {}
         self.logger.info("--------------------------Training Start-------------------------")
-        for dist in [50, 10, 5, 3]:
+        for dist in self.configs.distance_list:
             train_set, train_loader = self.load_data('train', dist)
             val_set, val_loader = self.load_data('val', dist)
             test_set, test_loader = self.load_data('test', dist)
