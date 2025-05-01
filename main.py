@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description='')
 
 # Experiment settings
 parser.add_argument('--task', type=str, default='NC',
-                    choices=['NC', 'LP'])
+                    choices=['NC', 'Transfer'])
 parser.add_argument('--dataset', type=str, default='Texas',
                     help="[Wisconsin, Texas, Cornell]")
 parser.add_argument('--root_path', type=str, default='./datasets')
@@ -82,9 +82,11 @@ print(f"Log path: {configs.log_path}")
 logger = create_logger(configs.log_path)
 logger.info(configs)
 
-exp = Exp(configs)
-exp.train()
-
-exp = GraphTransferExp(configs)
+if configs.task == "NC":
+    exp = Exp(configs)
+elif configs.task == "Transfer":
+    exp = GraphTransferExp(configs)
+else:
+    raise NotImplementedError
 exp.train()
 torch.cuda.empty_cache()
