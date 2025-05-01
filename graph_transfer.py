@@ -8,6 +8,7 @@ import os
 from torch_geometric.loader import DataLoader
 from modules.models import BoundaryGCN
 from torch_geometric.utils import degree
+from tqdm import tqdm
 
 
 class GraphTransferExp:
@@ -48,7 +49,7 @@ class GraphTransferExp:
             early_stop = EarlyStopping(self.configs.patience_trans)
             for epoch in range(self.configs.epochs_trans):
                 train_loss = 0
-                for data in train_loader:
+                for data in tqdm(train_loader):
                     data.degree = degree(data.edge_index[0], data.num_nodes)
                     data = data.to(self.device)
                     train_loss += self.train_step(model, data, optimizer)
@@ -67,10 +68,13 @@ class GraphTransferExp:
             test_mse = self.test(model, test_loader, distance=dist)
             self.logger.info(f"test_mse={test_mse}")
             total_mse[dist] = test_mse
+            self.logger.info(f"Distance {k}: {v}" for k, v in total_mse.items())
 
     def val(self, model, val_loader):
         loss = 0
-        for data in val_loader:
+        for data in tqdm(val_loader):
+            data.degree = degree(data.edge_index[0], data.num_nodes)
+            data = data.to(self.device)
             loss += self.test_step(model, data)
         loss = loss / len(val_loader)
         model.train()
@@ -84,7 +88,7 @@ class GraphTransferExp:
         model.load_state_dict(torch.load(path))
 
         loss = 0
-        for data in test_loader:
+        for data in tqdm(test_loader):
             data.degree = degree(data.edge_index[0], data.num_nodes)
             data = data.to(self.device)
             loss += self.test_step(model, data)
@@ -102,7 +106,7 @@ class GraphTransferExp:
         return loss.item()
 
     @staticmethod
-    def test_step(self, model, data):
+    def test_step(model, data):
         model.eval()
         with torch.no_grad():
             out = model(data)

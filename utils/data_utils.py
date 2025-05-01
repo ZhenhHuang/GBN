@@ -185,7 +185,7 @@ class GraphTransferDataset(InMemoryDataset):
         self.pre_transform = pre_transform
         super().__init__(root, transform=transform, pre_transform=pre_transform)
         # self.load(self.processed_paths[0])
-        self.data, self.slices = torch.load(self.processed_paths[0])
+        self.data, self.slices = torch.load(self.processed_paths[0], weights_only=False)
 
     @property
     def num_classes(self) -> int:
