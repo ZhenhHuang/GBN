@@ -23,3 +23,12 @@ def cal_AUC_AP(scores, trues):
     auc = roc_auc_score(trues, scores)
     ap = average_precision_score(trues, scores)
     return auc, ap
+
+
+def set_seed(seed):
+    # Set the seed for everything
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)

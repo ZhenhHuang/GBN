@@ -4,14 +4,13 @@ import os
 import random
 import argparse
 from exp import Exp
+from graph_transfer import GraphTransferExp
 from logger import create_logger
 from utils.config import load_config, save_config, list2str
+from utils.eval_utils import set_seed
 
 
-seed = 3047
-random.seed(seed)
-torch.manual_seed(seed)
-np.random.seed(seed)
+set_seed(3047)
 
 parser = argparse.ArgumentParser(description='')
 
@@ -43,6 +42,13 @@ parser.add_argument('--lr_nc', type=float, default=3e-5)
 parser.add_argument('--weight_decay_nc', type=float, default=0)
 parser.add_argument('--epochs_nc', type=int, default=2000)
 parser.add_argument('--patience_nc', type=int, default=100)
+
+# Graph Transfer
+parser.add_argument('--batch_size', type=int, default=32)
+parser.add_argument('--lr_trans', type=float, default=3e-5)
+parser.add_argument('--weight_decay_trans', type=float, default=0)
+parser.add_argument('--epochs_trans', type=int, default=2000)
+parser.add_argument('--patience_trans', type=int, default=100)
 
 # GPU
 parser.add_argument('--use_gpu', action='store_false', help='use gpu')
@@ -76,5 +82,8 @@ logger = create_logger(configs.log_path)
 logger.info(configs)
 
 exp = Exp(configs)
+exp.train()
+
+exp = GraphTransferExp(configs)
 exp.train()
 torch.cuda.empty_cache()

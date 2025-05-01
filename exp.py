@@ -53,13 +53,10 @@ class Exp:
                              weight_decay=self.configs.weight_decay_nc)
             early_stop = EarlyStopping(self.configs.patience_nc)
             for epoch in range(self.configs.epochs_nc):
-                epoch_loss = []
 
                 data = data.to(self.device)
-                loss, pred, true = self.train_step(nc_model, data, optimizer, split=t)
-                epoch_loss.append(loss)
+                train_loss, pred, true = self.train_step(nc_model, data, optimizer, split=t)
 
-                train_loss = np.mean(epoch_loss)
                 train_acc = cal_accuracy(pred, true)
 
                 self.logger.info(f"Epoch {epoch}: train_loss={train_loss}, train_acc={train_acc * 100: .2f}%")
