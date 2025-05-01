@@ -49,7 +49,8 @@ class BoundaryConvLayer(nn.Module):
 
 
 class BoundaryGCN(nn.Module):
-    def __init__(self, n_layers, in_dim, hid_dim, embed_dim, out_dim, bias, input_act, act, drop=0.3, norm='ln'):
+    def __init__(self, n_layers, in_dim, hid_dim, embed_dim, out_dim,
+                 bias, input_act, act, drop=0.3, norm='ln'):
         super().__init__()
         self.input_lin = nn.Sequential(nn.Linear(in_dim, embed_dim, bias=bias),
                                        nn.Dropout(drop),
