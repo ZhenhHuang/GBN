@@ -32,7 +32,7 @@ class GraphTransferExp:
     def load_data(self, split='train', distance=50):
         dataset = load_data(root=self.configs.root_path, data_name=self.configs.dataset,
                             split=split, distance=distance)
-        loader = DataLoader(dataset, batch_size=self.configs.batch_size)
+        loader = DataLoader(dataset, batch_size=len(dataset))
         return dataset, loader
 
     def train(self):
