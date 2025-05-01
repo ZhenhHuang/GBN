@@ -68,7 +68,8 @@ class GraphTransferExp:
             test_mse = self.test(model, test_loader, distance=dist)
             self.logger.info(f"test_mse={test_mse}")
             total_mse[dist] = test_mse
-            self.logger.info(f"Distance {k}: {v}" for k, v in total_mse.items())
+            for k, v in total_mse.items():
+                self.logger.info(f"Distance {k}: {v}" )
 
     def val(self, model, val_loader):
         loss = 0
