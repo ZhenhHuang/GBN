@@ -39,6 +39,7 @@ class GraphTransferExp:
 
     def train(self):
         total_mse = defaultdict(list)
+        res_str = f"{self.configs.dataset}:\n"
         self.logger.info("--------------------------Training Start-------------------------")
         for t in range(self.configs.exp_iters):
             for dist in self.configs.distance_list:
@@ -72,9 +73,9 @@ class GraphTransferExp:
                 self.logger.info(f"test_mse={test_mse}")
                 total_mse[dist].append(test_mse)
             for k, v in total_mse.items():
-                self.logger.info(f"Iter {t}: Distance {k}: {v}" )
-        res_str = ""
+                self.logger.info(f"Iter {t}: Distance {k}: {v[t]}" )
         for k, v in total_mse.items():
+            res_str += f"Iter All: Distance {k}: {v}\n"
             res_str += f"Final Result: Distance {k}: {np.mean(v)} \u00B1 {np.std(v)} \n"
         self.logger.info(res_str)
         with open(self.configs.result_path, 'a') as f:
