@@ -45,22 +45,20 @@ class BoundaryConvLayer(nn.Module):
         alpha = self.dir_bound(x)
         beta = self.rate(x)
         gamma = self.rob_bound(x)
-        in_x = alpha * self.aggregate(x, edge_index)
-        out_x = self.aggregate2(beta * x, edge_index)
+        in_x = alpha * self.aggregate(x, edge_index, src2dst=True)
+        out_x = self.aggregate(beta * x, edge_index, src2dst=False)
         x = in_x + gamma - out_x
         x = self.fc(x) + x_res
         return x
 
-    def aggregate(self, x, edge_index):
+    @staticmethod
+    def aggregate(x, edge_index, src2dst: bool = True):
         num_nodes = x.shape[0]
         src, dst = edge_index[0], edge_index[1]
-        x = scatter_sum(x[src], dst, dim=0, dim_size=num_nodes)
-        return x
-
-    def aggregate2(self, x, edge_index):
-        num_nodes = x.shape[0]
-        src, dst = edge_index[0], edge_index[1]
-        x = scatter_sum(x[dst], src, dim=0, dim_size=num_nodes)
+        if src2dst:
+            x = scatter_sum(x[src], dst, dim=0, dim_size=num_nodes)
+        else:
+            x = scatter_sum(x[dst], src, dim=0, dim_size=num_nodes)
         return x
 
 
