@@ -1,6 +1,4 @@
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch_scatter import scatter_sum
 from torch_geometric.utils import add_self_loops
 from utils.train_utils import ActivateModule
