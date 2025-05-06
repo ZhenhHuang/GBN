@@ -73,10 +73,10 @@ class GraphTransferExp:
                 test_mse = self.test(model, test_loader, distance=dist)
                 self.logger.info(f"test_mse={test_mse}")
                 total_mse[dist].append(test_mse)
+                with open(self.configs.result_path, 'a') as f:
+                    f.write(f"Iter {t}: Distance {dist}: {test_mse}\n")
             for k, v in total_mse.items():
                 self.logger.info(f"Iter {t}: Distance {k}: {v[t]}")
-                with open(self.configs.result_path, 'a') as f:
-                    f.write(f"Iter {t}: Distance {k}: {v[t]}\n")
         res_str = ""
         for k, v in total_mse.items():
             res_str += f"Iter All: Distance {k}: {v}\n"
