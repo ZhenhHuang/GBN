@@ -16,8 +16,13 @@ def ActivateModule(act_str: str):
         return nn.ELU()
     elif act_str == 'gelu':
         return nn.GELU()
+    elif act_str == 'softplus':
+        return nn.Softplus()
+    elif act_str == 'sigmoid':
+        return nn.Sigmoid()
     elif act_str is None:
         return nn.Identity()
+
     else:
         raise NotImplementedError
 

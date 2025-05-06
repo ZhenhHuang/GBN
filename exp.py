@@ -40,6 +40,8 @@ class Exp:
         total_test_acc = []
         total_test_weighted_f1 = []
         total_test_macro_f1 = []
+        with open(self.configs.result_path, 'a') as f:
+            f.write(f"---------------------{self.configs.dataset}--------------------------\n")
         self.logger.info("--------------------------Training Start-------------------------")
         dataset, data = self.load_data()
         for t in range(self.configs.exp_iters):
@@ -71,6 +73,8 @@ class Exp:
             self.logger.info(f"test_acc={test_acc * 100: .2f}%, "
                              f"weighted_f1={weighted_f1 * 100: .2f},"
                              f"macro_f1={macro_f1 * 100: .2f}%")
+            with open(self.configs.result_path, 'a') as f:
+                f.write(f"Iter {t}: ACC={test_acc * 100: .2f}%\n")
             total_test_acc.append(test_acc)
             total_test_weighted_f1.append(weighted_f1)
             total_test_macro_f1.append(macro_f1)

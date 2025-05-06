@@ -12,7 +12,7 @@ def load_data(root: str, data_name: str, num_splits=10, distance=1, split='train
                                                                  get_split(num_splits=num_splits, num_val=0.25, num_test=0.25)]))
     elif data_name in ["chameleon", "squirrel"]:
         dataset = WikipediaNetwork(root, name=data_name, transform=get_split(num_splits=num_splits, num_val=0.25, num_test=0.25))
-    elif data_name in ["Amazon-ratings", "Roman-empire"]:
+    elif data_name in ["Amazon-ratings", "Roman-empire.json"]:
         dataset = HeterophilousGraphDataset(root, data_name, transform=get_split(num_splits=num_splits, num_val=0.25, num_test=0.25))
     elif data_name in ["computers", "photo"]:
         dataset = Amazon(root, name=data_name, transform=get_split(num_splits=num_splits, num_val=0.2, num_test=0.2))

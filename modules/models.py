@@ -12,20 +12,24 @@ EPS = 1e-4
 class BoundaryConvLayer(nn.Module):
     def __init__(self, in_dim, hid_dim, out_dim, bias, act='gelu', drop=0.3, norm='ln'):
         super().__init__()
-        self.fc = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
+        self.lin = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
+                                nn.Dropout(drop))
+        self.fc = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
                                 nn.Dropout(drop),
                                 ActivateModule(act),
                                 nn.Linear(hid_dim, out_dim),
                                 nn.Dropout(drop))
-        self.rate = nn.Sequential(nn.Linear(in_dim, in_dim, bias=bias),
+        self.rate = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
                                   nn.Softplus(),
-                                  nn.Dropout(drop))
-        self.rob_bound = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
+                                  nn.Dropout(drop),
+                                  nn.Linear(hid_dim, hid_dim, bias=bias),
+                                  nn.Softplus())
+        self.rob_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
                                        nn.Dropout(drop),
                                        nn.Softplus(),
-                                       nn.Linear(hid_dim, in_dim, bias=bias),
+                                       nn.Linear(hid_dim, hid_dim, bias=bias),
                                        nn.LayerNorm(in_dim))
-        self.norm = nn.LayerNorm(in_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
+        self.norm = nn.LayerNorm(hid_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
 
     def forward(self, x, edge_index, degree):
         """
@@ -33,6 +37,7 @@ class BoundaryConvLayer(nn.Module):
         edge_index: 2 * E
         degrees: N
         """
+        x = self.lin(x)
         x_res = self.norm(x)
         rate = self.rate(x)
         gamma = self.rob_bound(x)
@@ -64,7 +69,6 @@ class BoundaryGCN(nn.Module):
     def forward(self, data):
         x = data.x
         x = self.input_lin(x)
-        x = self.drop(x)
         edge_index = add_self_loops(data.edge_index)[0] if self.add_self_loop else data.edge_index
         degree = data.degree
         for layer in self.layers:
