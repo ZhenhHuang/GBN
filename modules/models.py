@@ -4,9 +4,6 @@ from torch_geometric.utils import add_self_loops
 from utils.train_utils import ActivateModule
 
 
-EPS = 1e-4
-
-
 class BoundaryConvLayer(nn.Module):
     def __init__(self, in_dim, hid_dim, out_dim, bias, act='gelu', drop=0.3, norm='ln'):
         super().__init__()
