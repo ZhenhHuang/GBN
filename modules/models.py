@@ -20,7 +20,7 @@ class BoundaryConvLayer(nn.Module):
                                 nn.Linear(hid_dim, out_dim),
                                 nn.Dropout(drop))
         self.rate = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
-                                  nn.Softplus(),
+                                  ActivateModule(act),
                                   nn.Dropout(drop),
                                   nn.Linear(hid_dim, hid_dim, bias=bias),
                                   nn.Softplus())
@@ -29,6 +29,7 @@ class BoundaryConvLayer(nn.Module):
                                        nn.Softplus(),
                                        nn.Linear(hid_dim, hid_dim, bias=bias),
                                        nn.LayerNorm(in_dim))
+        self.in_norm = nn.LayerNorm(in_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
         self.norm = nn.LayerNorm(hid_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
 
     def forward(self, x, edge_index, degree):
@@ -37,19 +38,25 @@ class BoundaryConvLayer(nn.Module):
         edge_index: 2 * E
         degrees: N
         """
-        x = self.lin(x)
-        x_res = self.norm(x)
+        x = self.in_norm(self.lin(x))
         rate = self.rate(x)
         gamma = self.rob_bound(x)
         x = self.aggregate(x, edge_index)
         x = (rate * x + gamma) / (1 + rate * degree.unsqueeze(1) + EPS)
-        x = self.fc(x) + x_res
+        x = self.aggregate2(x / degree.unsqueeze(1), edge_index)
+        x = self.fc(x)
         return x
 
     def aggregate(self, x, edge_index):
         num_nodes = x.shape[0]
         src, dst = edge_index[0], edge_index[1]
         x = scatter_sum(x[src], dst, dim=0, dim_size=num_nodes)
+        return x
+
+    def aggregate2(self, x, edge_index):
+        num_nodes = x.shape[0]
+        src, dst = edge_index[0], edge_index[1]
+        x = scatter_sum(x[dst], src, dim=0, dim_size=num_nodes)
         return x
 
 

@@ -15,9 +15,9 @@ set_seed(3047)
 parser = argparse.ArgumentParser(description='')
 
 # Experiment settings
-parser.add_argument('--task', type=str, default='Transfer',
+parser.add_argument('--task', type=str, default='NC',
                     choices=['NC', 'Transfer'])
-parser.add_argument('--dataset', type=str, default='line',
+parser.add_argument('--dataset', type=str, default='squirrel',
                     help="[Wisconsin, Texas, Cornell]")
 parser.add_argument('--root_path', type=str, default='./datasets')
 parser.add_argument('--val_every', type=int, default=10)
@@ -30,19 +30,19 @@ parser.add_argument('--checkpoints', type=str, default='./checkpoints/')
 # Base Params
 parser.add_argument('--add_self_loop', action='store_true', help='add self loop to adjacency')
 parser.add_argument('--n_layers', type=int, default=5)
-parser.add_argument('--hid_dim', type=int, default=64, help='hidden dimension')
-parser.add_argument('--embed_dim', type=int, default=64, help='embedding dimension')
-parser.add_argument('--dropout', type=float, default=0.0)
-parser.add_argument('--act', type=str, default='tanh', help='activation function')
-parser.add_argument('--input_act', type=str, default='tanh', help='activation function for input layer')
-parser.add_argument('--norm', type=str, default='bn', help='Normalization of Batch Norm or Layer Norm')
+parser.add_argument('--hid_dim', type=int, default=512, help='hidden dimension')
+parser.add_argument('--embed_dim', type=int, default=512, help='embedding dimension')
+parser.add_argument('--dropout', type=float, default=0.4)
+parser.add_argument('--act', type=str, default='gelu', help='activation function')
+parser.add_argument('--input_act', type=str, default='gelu', help='activation function for input layer')
+parser.add_argument('--norm', type=str, default='ln', help='Normalization of Batch Norm or Layer Norm')
 parser.add_argument('--bias', action='store_false', help='use bias for linear layer')
 
 # Node Classification
 parser.add_argument('--lr_nc', type=float, default=3e-5)
 parser.add_argument('--weight_decay_nc', type=float, default=0)
 parser.add_argument('--epochs_nc', type=int, default=2000)
-parser.add_argument('--patience_nc', type=int, default=100)
+parser.add_argument('--patience_nc', type=int, default=10)
 
 # Graph Transfer
 parser.add_argument('--additional_layers', type=int, default=0)
