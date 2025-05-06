@@ -14,21 +14,28 @@ class BoundaryConvLayer(nn.Module):
         super().__init__()
         self.lin = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
                                 nn.Dropout(drop))
+        self.rate = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
+                                  ActivateModule(act),
+                                  nn.Dropout(drop),
+                                  nn.Linear(hid_dim, hid_dim, bias=bias),
+                                  nn.Softplus(),
+                                  nn.LayerNorm(hid_dim))
+        self.dir_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
+                                       nn.Dropout(drop),
+                                       ActivateModule(act),
+                                       nn.Linear(hid_dim, hid_dim, bias=bias),
+                                       nn.Softplus(),
+                                       nn.LayerNorm(hid_dim))
+        self.rob_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
+                                       nn.Dropout(drop),
+                                       ActivateModule(act),
+                                       nn.Linear(hid_dim, hid_dim, bias=bias),
+                                       nn.LayerNorm(hid_dim))
         self.fc = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
                                 nn.Dropout(drop),
                                 ActivateModule(act),
                                 nn.Linear(hid_dim, out_dim),
                                 nn.Dropout(drop))
-        self.rate = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
-                                  ActivateModule(act),
-                                  nn.Dropout(drop),
-                                  nn.Linear(hid_dim, hid_dim, bias=bias),
-                                  nn.Softplus())
-        self.rob_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.Dropout(drop),
-                                       nn.Softplus(),
-                                       nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.LayerNorm(in_dim))
         self.in_norm = nn.LayerNorm(in_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
         self.norm = nn.LayerNorm(hid_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
 
@@ -38,13 +45,15 @@ class BoundaryConvLayer(nn.Module):
         edge_index: 2 * E
         degrees: N
         """
-        x = self.in_norm(self.lin(x))
-        rate = self.rate(x)
+        x = self.lin(x)
+        x_res = self.norm(x)
+        alpha = self.dir_bound(x)
+        beta = self.rate(x)
         gamma = self.rob_bound(x)
-        x = self.aggregate(x, edge_index)
-        x = (rate * x + gamma) / (1 + rate * degree.unsqueeze(1) + EPS)
-        x = self.aggregate2(x / degree.unsqueeze(1), edge_index)
-        x = self.fc(x)
+        in_x = alpha * self.aggregate(x, edge_index)
+        out_x = self.aggregate2(beta * x, edge_index)
+        x = in_x + gamma - out_x
+        x = self.fc(x) + x_res
         return x
 
     def aggregate(self, x, edge_index):
@@ -77,7 +86,7 @@ class BoundaryGCN(nn.Module):
         x = data.x
         x = self.input_lin(x)
         edge_index = add_self_loops(data.edge_index)[0] if self.add_self_loop else data.edge_index
-        degree = data.degree
+        degree = data.degree + 1 if self.add_self_loop else data.degree
         for layer in self.layers:
             x = layer(x, edge_index, degree)
         x = self.out_norm(x)

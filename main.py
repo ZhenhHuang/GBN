@@ -68,7 +68,7 @@ configs.log_path = log_path
 
 if not os.path.exists(configs.result_dir):
     os.makedirs(configs.result_dir, exist_ok=True)
-result_path = f"{configs.result_dir}/{configs.task}.txt"
+result_path = f"{configs.result_dir}/{configs.task}_{configs.dataset}.txt"
 configs.result_path = result_path
 
 if configs.task_model_path is None:
