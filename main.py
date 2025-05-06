@@ -1,12 +1,10 @@
 import torch
-import numpy as np
 import os
-import random
 import argparse
 from exp import Exp
 from graph_transfer import GraphTransferExp
 from logger import create_logger
-from utils.config import load_config, save_config, list2str
+from utils.config import load_config, save_config
 from utils.eval_utils import set_seed
 
 
