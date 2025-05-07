@@ -47,7 +47,7 @@ class BoundaryConvLayer(nn.Module):
         gamma = self.rob_bound(x)
         in_x = alpha * self.aggregate(x, edge_index, src2dst=True)
         out_x = self.aggregate(beta * x, edge_index, src2dst=False)
-        x = in_x + gamma - out_x
+        x = in_x + gamma + out_x
         x = self.fc(x) + x_res
         return x
 
