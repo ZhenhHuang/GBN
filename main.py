@@ -57,6 +57,18 @@ parser.add_argument('--devices', type=str, default='0,1', help='device ids of mu
 
 configs = parser.parse_args()
 
+json_dir = f"./configs/{configs.task}"
+json_path = f"{json_dir}/{configs.dataset}.json"
+if not os.path.exists(json_dir):
+    os.makedirs(json_dir, exist_ok=True)
+
+if os.path.exists(json_path):
+    print(f"Loading config file: {json_path}")
+    configs = load_config(vars(configs), json_path)
+else:
+    print(f"Saving config file: {json_path}")
+    save_config(vars(configs), json_path)
+
 if not os.path.exists(configs.log_dir):
     os.makedirs(configs.log_dir, exist_ok=True)
 log_path = (f"{configs.log_dir}/{configs.task}_{configs.dataset}"
@@ -71,17 +83,6 @@ configs.result_path = result_path
 
 if configs.task_model_path is None:
     configs.task_model_path = f"{configs.task}_{configs.dataset}_model.pt"
-json_dir = f"./configs/{configs.task}"
-json_path = f"{json_dir}/{configs.dataset}.json"
-if not os.path.exists(json_dir):
-    os.makedirs(json_dir, exist_ok=True)
-
-if os.path.exists(json_path):
-    print(f"Loading config file: {json_path}")
-    configs = load_config(vars(configs), json_path)
-else:
-    print(f"Saving config file: {json_path}")
-    save_config(vars(configs), json_path)
 
 print(f"Log path: {configs.log_path}")
 logger = create_logger(configs.log_path)
