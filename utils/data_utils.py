@@ -8,7 +8,8 @@ warnings.filterwarnings('ignore')
 
 def load_data(root: str, data_name: str, num_splits=10, distance=1, split='train'):
     if data_name in ["Texas", "Wisconsin", "Cornell"]:
-        dataset = WebKB(root, name=data_name, transform=Compose([LargestConnectedComponents()]))
+        dataset = WebKB(root, name=data_name, transform=Compose([LargestConnectedComponents(),
+                                                                 get_split(num_splits=num_splits, num_val=0.25, num_test=0.25)]))
     elif data_name in ["chameleon", "squirrel"]:
         dataset = WikipediaNetwork(root, name=data_name)
     elif data_name in ["Amazon-ratings", "Roman-empire"]:
@@ -73,7 +74,10 @@ def line_graph(distance, channels=1):
     y[0, :] = 0
     y[-1, :] = 1
 
-    return Data(x=x, edge_index=edge_index, y=y)
+    mask = torch.zeros(x.shape[0]).bool()
+    mask[-1] = True
+    mask[0] = True
+    return Data(x=x, edge_index=edge_index, y=y, mask=mask)
 
 
 def cliquepath_transfer_graph(distance, channels=1):
@@ -119,7 +123,10 @@ def cliquepath_transfer_graph(distance, channels=1):
     y[0, :] = 0
     y[n_nodes - 1, :] = 1
 
-    return Data(x=x, edge_index=edge_index, y=y)
+    mask = torch.zeros(x.shape[0]).bool()
+    mask[n_nodes - 1] = True
+    mask[0] = True
+    return Data(x=x, edge_index=edge_index, y=y, mask=mask)
 
 
 def ring_transfer_graph(distance, channels, add_crosses: bool):
@@ -169,8 +176,10 @@ def ring_transfer_graph(distance, channels, add_crosses: bool):
     y = x.clone()
     y[0, :] = 0
     y[opposite_node, :] = 1
-
-    return Data(x=x, edge_index=edge_index, y=y)
+    mask = torch.zeros(x.shape[0]).bool()
+    mask[opposite_node] = True
+    mask[0] = True
+    return Data(x=x, edge_index=edge_index, y=y, mask=mask)
 
 
 class GraphTransferDataset(InMemoryDataset):
