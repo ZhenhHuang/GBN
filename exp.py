@@ -33,7 +33,7 @@ class Exp:
     def load_data(self):
         dataset = load_data(root=self.configs.root_path, data_name=self.configs.dataset, num_splits=self.configs.exp_iters)
         data = dataset[0].clone()
-        data.degree = degree(data.edge_index[0], data.num_nodes)
+        data.degree = degree(data.edge_index[0], data.num_nodes).unsqueeze(1)
         return dataset, data
 
     def train(self):

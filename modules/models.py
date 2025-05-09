@@ -1,65 +1,7 @@
 import torch.nn as nn
-from torch_scatter import scatter_sum
-from torch_geometric.utils import add_self_loops
 from utils.train_utils import ActivateModule
-
-
-class BoundaryConvLayer(nn.Module):
-    def __init__(self, in_dim, hid_dim, out_dim, bias, act='gelu', drop=0.3, norm='ln'):
-        super().__init__()
-        self.lin = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
-                                nn.Dropout(drop))
-        self.rate = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
-                                  ActivateModule(act),
-                                  nn.Dropout(drop),
-                                  nn.Linear(hid_dim, hid_dim, bias=bias),
-                                  nn.Softplus(),
-                                  nn.LayerNorm(hid_dim))
-        self.dir_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.Dropout(drop),
-                                       ActivateModule(act),
-                                       nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.Softplus(),
-                                       nn.LayerNorm(hid_dim))
-        self.rob_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.Dropout(drop),
-                                       ActivateModule(act),
-                                       nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.LayerNorm(hid_dim))
-        self.fc = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
-                                nn.Dropout(drop),
-                                ActivateModule(act),
-                                nn.Linear(hid_dim, out_dim),
-                                nn.Dropout(drop))
-        self.in_norm = nn.LayerNorm(in_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
-        self.norm = nn.LayerNorm(hid_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
-
-    def forward(self, x, edge_index, degree):
-        """
-        x : N * D
-        edge_index: 2 * E
-        degrees: N
-        """
-        x = self.lin(x)
-        x_res = self.norm(x)
-        alpha = self.dir_bound(x)
-        beta = self.rate(x)
-        gamma = self.rob_bound(x)
-        in_x = alpha * self.aggregate(x, edge_index, src2dst=True)
-        out_x = self.aggregate(beta * x, edge_index, src2dst=False)
-        x = in_x + gamma + out_x
-        x = self.fc(x) + x_res
-        return x
-
-    @staticmethod
-    def aggregate(x, edge_index, src2dst: bool = True):
-        num_nodes = x.shape[0]
-        src, dst = edge_index[0], edge_index[1]
-        if src2dst:
-            x = scatter_sum(x[src], dst, dim=0, dim_size=num_nodes)
-        else:
-            x = scatter_sum(x[dst], src, dim=0, dim_size=num_nodes)
-        return x
+from modules.layers import BoundaryConvLayer
+from torch_geometric.utils import add_self_loops
 
 
 class BoundaryGCN(nn.Module):
