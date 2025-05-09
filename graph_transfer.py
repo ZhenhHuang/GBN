@@ -55,7 +55,7 @@ class GraphTransferExp:
                 for epoch in range(self.configs.epochs_trans):
                     train_loss = 0
                     for data in tqdm(train_loader):
-                        data.degree = degree(data.edge_index[0], data.num_nodes).unsqueeze(1)
+                        data.degree = degree(data.edge_index[0], data.num_nodes)
                         data = data.to(self.device)
                         train_loss += self.train_step(model, data, optimizer)
 
@@ -89,7 +89,7 @@ class GraphTransferExp:
     def val(self, model, val_loader):
         loss = 0
         for data in tqdm(val_loader):
-            data.degree = degree(data.edge_index[0], data.num_nodes).unsqueeze(1)
+            data.degree = degree(data.edge_index[0], data.num_nodes)
             data = data.to(self.device)
             loss += self.test_step(model, data)
         loss = loss / len(val_loader)
@@ -105,7 +105,7 @@ class GraphTransferExp:
 
         loss = 0
         for data in tqdm(test_loader):
-            data.degree = degree(data.edge_index[0], data.num_nodes).unsqueeze(1)
+            data.degree = degree(data.edge_index[0], data.num_nodes)
             data = data.to(self.device)
             loss += self.test_step(model, data)
         loss = loss / len(test_loader)
@@ -116,7 +116,7 @@ class GraphTransferExp:
     def train_step(model, data, optimizer):
         optimizer.zero_grad()
         out = model(data)
-        loss = F.mse_loss(out[data.mask], data.y[data.mask])
+        loss = F.mse_loss(out, data.y)
         loss.backward()
         optimizer.step()
         return loss.item()
@@ -126,5 +126,5 @@ class GraphTransferExp:
         model.eval()
         with torch.no_grad():
             out = model(data)
-            loss = F.mse_loss(out[data.mask], data.y[data.mask])
+            loss = F.mse_loss(out, data.y)
         return loss.item()
