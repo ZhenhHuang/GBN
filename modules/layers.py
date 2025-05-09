@@ -50,16 +50,14 @@ class BoundaryConvLayer(nn.Module):
         self.lin = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
                                  nn.Dropout(drop))
         self.rate = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
-                                  ActivateModule(act),
                                   nn.Dropout(drop),
+                                  ActivateModule(act),
                                   nn.Linear(hid_dim, hid_dim, bias=bias),
-                                  nn.Softplus(),
                                   nn.LayerNorm(hid_dim))
         self.dir_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
                                        nn.Dropout(drop),
                                        ActivateModule(act),
                                        nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.Softplus(),
                                        nn.LayerNorm(hid_dim))
         self.rob_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
                                        nn.Dropout(drop),
@@ -67,7 +65,7 @@ class BoundaryConvLayer(nn.Module):
                                        nn.Linear(hid_dim, hid_dim, bias=bias),
                                        nn.LayerNorm(hid_dim))
         self.fc = FeedForwardLayer(hid_dim, hid_dim, out_dim, bias, act, drop)
-        self.norm = nn.LayerNorm(hid_dim) if norm == 'ln' else nn.BatchNorm1d(in_dim)
+        self.norm = nn.LayerNorm(hid_dim) if norm == 'ln' else nn.BatchNorm1d(hid_dim)
 
     def forward(self, x, edge_index, degree):
         """
