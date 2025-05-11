@@ -28,7 +28,7 @@ def ActivateModule(act_str: str):
 
 
 class EarlyStopping:
-    def __init__(self, patience=7, verbose=False, delta=0):
+    def __init__(self, patience=7, verbose=True, delta=0):
         self.patience = patience
         self.verbose = verbose
         self.counter = 0
@@ -43,7 +43,7 @@ class EarlyStopping:
             self.best_score = score
             if save:
                 self.save_checkpoint(val_loss, model, dir, file)
-        elif score < self.best_score + self.delta:
+        elif score <= self.best_score + self.delta:
             self.counter += 1
             print(
                 f'EarlyStopping counter: {self.counter} out of {self.patience}')
