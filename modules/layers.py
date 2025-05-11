@@ -80,7 +80,7 @@ class BoundaryConvLayer(nn.Module):
         out_x = (rate + (1 - rate) * ind_int) / torch.sqrt(p_deg) * self.aggregate(ind_int * x / torch.sqrt(p_deg),
                                                                                    edge_index, src2dst=False)
         x = in_x + ind_bd * gamma + out_x
-        x = self.fc(x) + x_res * ind_int
+        x = self.fc(x) + x_res
         return x
 
     @staticmethod
