@@ -1,7 +1,7 @@
 import torch.nn as nn
-import torch
+import torch.nn.functional as F
 from utils.train_utils import ActivateModule
-from modules.layers import BoundaryConvLayer
+from modules.layers import BoundaryConvLayer, GCNLayer
 from torch_geometric.utils import add_self_loops
 
 
@@ -17,14 +17,16 @@ class BoundaryGCN(nn.Module):
         self.out_lin = nn.Linear(embed_dim, out_dim, bias=bias)
         self.drop = nn.Dropout(drop)
         self.add_self_loop = add_self_loop
+        self.ind_layer = GCNLayer(embed_dim, hid_dim, 1, bias=bias, drop=drop)
 
     def forward(self, data):
         x = data.x
         x = self.input_lin(x)
         edge_index = add_self_loops(data.edge_index)[0] if self.add_self_loop else data.edge_index
         degree = data.degree + 1 if self.add_self_loop else data.degree
+        ind_bd = F.logsigmoid(self.ind_layer(x, edge_index)).exp()
         for layer in self.layers:
-            x = layer(x, edge_index, degree)
+            x = layer(x, edge_index, ind_bd)
         x = self.out_norm(x)
         x = self.out_lin(x)
         return x

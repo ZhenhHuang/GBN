@@ -53,12 +53,8 @@ class BoundaryConvLayer(nn.Module):
                                   nn.Dropout(drop),
                                   ActivateModule(act),
                                   nn.Linear(hid_dim, hid_dim, bias=bias),
+                                  #   ActivateModule(act),
                                   nn.LayerNorm(hid_dim))
-        self.dir_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.Dropout(drop),
-                                       ActivateModule(act),
-                                       nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.LayerNorm(hid_dim))
         self.rob_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
                                        nn.Dropout(drop),
                                        ActivateModule(act),
@@ -67,7 +63,7 @@ class BoundaryConvLayer(nn.Module):
         self.fc = FeedForwardLayer(hid_dim, hid_dim, out_dim, bias, act, drop)
         self.norm = nn.LayerNorm(hid_dim) if norm == 'ln' else nn.BatchNorm1d(hid_dim)
 
-    def forward(self, x, edge_index, degree):
+    def forward(self, x, edge_index, ind_bd):
         """
         x : N * D
         edge_index: 2 * E
@@ -75,13 +71,16 @@ class BoundaryConvLayer(nn.Module):
         """
         x = self.lin(x)
         x_res = self.norm(x)
-        alpha = self.dir_bound(x)
-        beta = self.rate(x)
+        rate = self.rate(x)
         gamma = self.rob_bound(x)
-        in_x = alpha * self.aggregate(x, edge_index, src2dst=True)
-        out_x = self.aggregate(beta * x, edge_index, src2dst=False)
-        x = in_x + gamma + out_x
-        x = self.fc(x) + x_res
+        ind_int = 1 - ind_bd
+        p_deg = ind_bd * self.aggregate(torch.ones_like(ind_bd), edge_index) + (ind_int - ind_bd) * self.aggregate(
+            ind_int, edge_index) + 1
+        in_x = ind_int / torch.sqrt(p_deg) * self.aggregate(x / torch.sqrt(p_deg), edge_index, src2dst=True)
+        out_x = (rate + (1 - rate) * ind_int) / torch.sqrt(p_deg) * self.aggregate(ind_int * x / torch.sqrt(p_deg),
+                                                                                   edge_index, src2dst=False)
+        x = in_x + ind_bd * gamma + out_x
+        x = self.fc(x) + x_res * ind_int
         return x
 
     @staticmethod
