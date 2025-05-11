@@ -43,7 +43,7 @@ class EarlyStopping:
             self.best_score = score
             if save:
                 self.save_checkpoint(val_loss, model, dir, file)
-        elif score <= self.best_score + self.delta:
+        elif score < self.best_score + self.delta:
             self.counter += 1
             print(
                 f'EarlyStopping counter: {self.counter} out of {self.patience}')
