@@ -13,7 +13,7 @@ class FeedForwardLayer(nn.Module):
             nn.Linear(in_dim, hid_dim, bias=bias),
             nn.Dropout(drop),
             ActivateModule(act),
-            nn.Linear(in_dim, out_dim, bias=bias),
+            nn.Linear(hid_dim, out_dim, bias=bias),
             nn.Dropout(drop)
         )
 
