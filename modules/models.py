@@ -7,7 +7,7 @@ from torch_geometric.utils import add_self_loops
 
 class BoundaryGCN(nn.Module):
     def __init__(self, n_layers, in_dim, hid_dim, embed_dim, out_dim,
-                 bias, input_act, act, drop=0.3, norm='ln', add_self_loop=True):
+                 bias, input_act, act, drop=0.3, norm='ln', add_self_loop=True, tau=0.1):
         super().__init__()
         self.input_lin = nn.Sequential(nn.Linear(in_dim, embed_dim, bias=bias),
                                        nn.Dropout(drop),
@@ -18,13 +18,13 @@ class BoundaryGCN(nn.Module):
         self.drop = nn.Dropout(drop)
         self.add_self_loop = add_self_loop
         self.ind_layer = GCNLayer(embed_dim, hid_dim, 1, bias=bias, drop=drop)
+        self.tau = tau
 
     def forward(self, data):
         x = data.x
         x = self.input_lin(x)
         edge_index = add_self_loops(data.edge_index)[0] if self.add_self_loop else data.edge_index
-        degree = data.degree + 1 if self.add_self_loop else data.degree
-        ind_bd = F.logsigmoid(self.ind_layer(x, edge_index)).exp()
+        ind_bd = F.logsigmoid(self.ind_layer(x, edge_index) / self.tau).exp()
         for layer in self.layers:
             x = layer(x, edge_index, ind_bd)
         x = self.out_norm(x)

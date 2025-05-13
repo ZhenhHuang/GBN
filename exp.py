@@ -27,7 +27,8 @@ class Exp:
                                embed_dim=self.configs.embed_dim, out_dim=dataset.num_classes,
                                bias=self.configs.bias, act=self.configs.act, input_act=self.configs.input_act,
                                drop=self.configs.dropout, norm=self.configs.norm,
-                               add_self_loop=self.configs.add_self_loop).to(self.device)
+                               add_self_loop=self.configs.add_self_loop,
+                               tau=self.configs.tau).to(self.device)
         return nc_model
 
     def load_data(self):

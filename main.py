@@ -35,6 +35,7 @@ parser.add_argument('--act', type=str, default='gelu', help='activation function
 parser.add_argument('--input_act', type=str, default='gelu', help='activation function for input layer')
 parser.add_argument('--norm', type=str, default='ln', help='Normalization of Batch Norm or Layer Norm')
 parser.add_argument('--bias', action='store_false', help='use bias for linear layer')
+parser.add_argument('--tau', type=float, default=0.05)
 
 # Node Classification
 parser.add_argument('--lr_nc', type=float, default=3e-5)
