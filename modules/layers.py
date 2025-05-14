@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 from torch_scatter import scatter_sum
 from torch_geometric.utils import normalize_edge_index
-from utils.train_utils import ActivateModule
+from utils.train_utils import ActivateModule, NormModule
 import torch.nn.functional as F
 
 
@@ -45,23 +45,20 @@ class GCNLayer(nn.Module):
 
 
 class BoundaryConvLayer(nn.Module):
-    def __init__(self, in_dim, hid_dim, out_dim, bias, act='gelu', drop=0.3, norm='ln'):
+    def __init__(self, in_dim, hid_dim, out_dim, bias, act='gelu', drop=0.3, norm='ln',
+                 rate=None, gamma=None):
         super().__init__()
-        self.lin = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
-                                 nn.Dropout(drop))
-        self.rate = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
+        self.rate = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
                                   nn.Dropout(drop),
                                   ActivateModule(act),
                                   nn.Linear(hid_dim, hid_dim, bias=bias),
-                                  #   ActivateModule(act),
-                                  nn.LayerNorm(hid_dim))
-        self.rob_bound = nn.Sequential(nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.Dropout(drop),
-                                       ActivateModule(act),
-                                       nn.Linear(hid_dim, hid_dim, bias=bias),
-                                       nn.LayerNorm(hid_dim))
+                                  NormModule(norm, hid_dim)) if rate is None else rate
+        self.gamma = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
+                                   nn.Dropout(drop),
+                                   ActivateModule(act),
+                                   nn.Linear(hid_dim, hid_dim, bias=bias),
+                                   NormModule(norm, hid_dim)) if rate is None else gamma
         self.fc = FeedForwardLayer(hid_dim, hid_dim, out_dim, bias, act, drop)
-        self.norm = nn.LayerNorm(hid_dim) if norm == 'ln' else nn.BatchNorm1d(hid_dim)
 
     def forward(self, x, edge_index, ind_bd):
         """
@@ -69,18 +66,16 @@ class BoundaryConvLayer(nn.Module):
         edge_index: 2 * E
         degrees: N
         """
-        x = self.lin(x)
-        x_res = self.norm(x)
         rate = self.rate(x)
-        gamma = self.rob_bound(x)
+        gamma = self.gamma(x)
         ind_int = 1 - ind_bd
         p_deg = ind_bd * self.aggregate(torch.ones_like(ind_bd), edge_index) + (ind_int - ind_bd) * self.aggregate(
             ind_int, edge_index) + 1
-        in_x = ind_int / torch.sqrt(p_deg) * self.aggregate(x / torch.sqrt(p_deg), edge_index, src2dst=True)
-        out_x = (rate + (1 - rate) * ind_int) / torch.sqrt(p_deg) * self.aggregate(ind_int * x / torch.sqrt(p_deg),
-                                                                                   edge_index, src2dst=False)
-        x = in_x + ind_bd * gamma + out_x
-        x = self.fc(x) + x_res
+        in_x = ind_int / torch.sqrt(p_deg) * self.aggregate((1 + ind_int) * x / torch.sqrt(p_deg), edge_index,
+                                                            src2dst=True)
+        out_x = rate * ind_bd / torch.sqrt(p_deg) * self.aggregate(ind_int * x / torch.sqrt(p_deg), edge_index,
+                                                                   src2dst=True)
+        x = self.fc(in_x + out_x) + ind_bd * gamma
         return x
 
     @staticmethod

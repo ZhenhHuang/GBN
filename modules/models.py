@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.train_utils import ActivateModule
+from utils.train_utils import ActivateModule, NormModule
 from modules.layers import BoundaryConvLayer, GCNLayer
 from torch_geometric.utils import add_self_loops
 
@@ -13,7 +13,7 @@ class BoundaryGCN(nn.Module):
                                        nn.Dropout(drop),
                                        ActivateModule(input_act))
         self.layers = nn.ModuleList([BoundaryConvLayer(embed_dim, hid_dim, embed_dim, bias, act, drop, norm) for _ in range(n_layers)])
-        self.out_norm = nn.LayerNorm(embed_dim) if norm == 'ln' else nn.BatchNorm1d(embed_dim)
+        self.out_norm = NormModule(norm, hid_dim)
         self.out_lin = nn.Linear(embed_dim, out_dim, bias=bias)
         self.drop = nn.Dropout(drop)
         self.add_self_loop = add_self_loop

@@ -27,8 +27,17 @@ def ActivateModule(act_str: str):
         raise NotImplementedError
 
 
+def NormModule(norm_str: str, dim: int):
+    if norm_str == "ln":
+        return nn.LayerNorm(dim)
+    elif norm_str == "bn":
+        return nn.BatchNorm1d(dim)
+    else:
+        return nn.Identity()
+
+
 class EarlyStopping:
-    def __init__(self, patience=7, verbose=True, delta=0):
+    def __init__(self, patience=7, verbose=False, delta=0):
         self.patience = patience
         self.verbose = verbose
         self.counter = 0
