@@ -42,6 +42,7 @@ class GraphTransferExp:
         total_mse = defaultdict(list)
         with open(self.configs.result_path, 'a') as f:
             f.write(f"---------------------{self.configs.dataset}--------------------------\n")
+            f.write(f"{self.configs}\n")
         self.logger.info("--------------------------Training Start-------------------------")
         for t in range(self.configs.exp_iters):
             for dist in self.configs.distance_list:

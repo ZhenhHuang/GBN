@@ -45,6 +45,7 @@ class Exp:
         total_test_macro_f1 = []
         with open(self.configs.result_path, 'a') as f:
             f.write(f"---------------------{self.configs.dataset}--------------------------\n")
+            f.write(f"{self.configs}\n")
         self.logger.info("--------------------------Training Start-------------------------")
         dataset, data = self.load_data()
         for t in range(self.configs.exp_iters):
