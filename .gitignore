@@ -180,6 +180,6 @@ datasets/
 checkpoints/
 
 # configs
-configs/
+#configs/
 results/
 logs/
