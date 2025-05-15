@@ -28,7 +28,7 @@ class Exp:
                                bias=self.configs.bias, act=self.configs.act, input_act=self.configs.input_act,
                                drop=self.configs.dropout, norm=self.configs.norm,
                                add_self_loop=self.configs.add_self_loop,
-                               tau=self.configs.tau).to(self.device)
+                               tau=self.configs.tau, layer_wise=self.configs.layer_wise).to(self.device)
         return nc_model
 
     def load_data(self):

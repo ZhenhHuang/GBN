@@ -1,4 +1,4 @@
-from torch_geometric.datasets import Amazon, Coauthor, WebKB, WikipediaNetwork, WikiCS, HeterophilousGraphDataset
+from torch_geometric.datasets import Amazon, Coauthor, WebKB, WikipediaNetwork, WikiCS, HeterophilousGraphDataset, Planetoid
 from torch_geometric.transforms import RandomNodeSplit, LargestConnectedComponents, Compose
 import os
 import warnings
@@ -21,6 +21,8 @@ def load_data(root: str, data_name: str, num_splits=10, distance=1, split='train
         dataset = WikiCS(os.path.join(root, data_name), transform=get_split(num_splits=num_splits, num_val=0.2, num_test=0.2))
     elif data_name in ["ring", "line", "crossed-ring"]:
         dataset = GraphTransferDataset(root, data_name, distance, split=split)
+    elif data_name in ["Cora"]:
+        dataset = Planetoid(root, data_name, transform=get_split(num_splits=num_splits, num_val=0.2, num_test=0.2))
     else:
         raise NotImplementedError
     return dataset

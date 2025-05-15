@@ -52,30 +52,32 @@ class BoundaryConvLayer(nn.Module):
                                   nn.Dropout(drop),
                                   ActivateModule(act),
                                   nn.Linear(hid_dim, hid_dim, bias=bias),
-                                  NormModule(norm, hid_dim)) if rate is None else rate
+                                  NormModule(norm, hid_dim)
+                                  ) if rate is None else rate
         self.gamma = nn.Sequential(nn.Linear(in_dim, hid_dim, bias=bias),
                                    nn.Dropout(drop),
                                    ActivateModule(act),
                                    nn.Linear(hid_dim, hid_dim, bias=bias),
-                                   NormModule(norm, hid_dim)) if rate is None else gamma
+                                   NormModule(norm, hid_dim)
+                                   ) if rate is None else gamma
         self.fc = FeedForwardLayer(hid_dim, hid_dim, out_dim, bias, act, drop)
 
-    def forward(self, x, edge_index, ind_bd):
+    def forward(self, xt, x0, edge_index, ind_bd):
         """
         x : N * D
         edge_index: 2 * E
         degrees: N
         """
-        rate = self.rate(x)
-        gamma = self.gamma(x)
+        rate = self.rate(xt)
+        gamma = self.gamma(x0)
         ind_int = 1 - ind_bd
         p_deg = ind_bd * self.aggregate(torch.ones_like(ind_bd), edge_index) + (ind_int - ind_bd) * self.aggregate(
             ind_int, edge_index) + 1
-        in_x = ind_int / torch.sqrt(p_deg) * self.aggregate((1 + ind_int) * x / torch.sqrt(p_deg), edge_index,
+        in_x = ind_int / torch.sqrt(p_deg) * self.aggregate((1 + ind_int) * xt / torch.sqrt(p_deg), edge_index,
                                                             src2dst=True)
-        out_x = rate * ind_bd / torch.sqrt(p_deg) * self.aggregate(ind_int * x / torch.sqrt(p_deg), edge_index,
+        out_x = rate * ind_bd / torch.sqrt(p_deg) * self.aggregate(ind_int * xt / torch.sqrt(p_deg), edge_index,
                                                                    src2dst=True)
-        x = self.fc(in_x + out_x) + ind_bd * gamma
+        x = self.fc(in_x + out_x) + gamma
         return x
 
     @staticmethod
