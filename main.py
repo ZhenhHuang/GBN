@@ -1,7 +1,7 @@
 import torch
 import os
 import argparse
-from exp import Exp
+from node_classification import Exp
 from graph_transfer import GraphTransferExp
 from logger import create_logger
 from utils.config import load_config, save_config
