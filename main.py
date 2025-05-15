@@ -15,8 +15,7 @@ parser = argparse.ArgumentParser(description='')
 # Experiment settings
 parser.add_argument('--task', type=str, default='NC',
                     choices=['NC', 'Transfer'])
-parser.add_argument('--dataset', type=str, default='squirrel',
-                    help="[Wisconsin, Texas, Cornell]")
+parser.add_argument('--dataset', type=str, default='CS', help="data name")
 parser.add_argument('--root_path', type=str, default='./datasets')
 parser.add_argument('--val_every', type=int, default=5)
 parser.add_argument('--exp_iters', type=int, default=10)
@@ -27,7 +26,7 @@ parser.add_argument('--checkpoints', type=str, default='./checkpoints/')
 
 # Base Params
 parser.add_argument('--add_self_loop', action='store_true', help='add self loop to adjacency')
-parser.add_argument('--n_layers', type=int, default=3)
+parser.add_argument('--n_layers', type=int, default=2)
 parser.add_argument('--hid_dim', type=int, default=512, help='hidden dimension')
 parser.add_argument('--embed_dim', type=int, default=512, help='embedding dimension')
 parser.add_argument('--dropout', type=float, default=0.1)
