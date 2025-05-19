@@ -32,7 +32,6 @@ def get_split(num_splits, num_val=0.2, num_test=0.2):
     return RandomNodeSplit(num_splits=num_splits, num_val=num_val, num_test=num_test)
 
 
-"""Refer to https://github.com/gravins/SWAN/blob/main/graph_transfer/graph_transfer_data.py"""
 import torch
 from torch_geometric.data import Data, InMemoryDataset
 import numpy as np
