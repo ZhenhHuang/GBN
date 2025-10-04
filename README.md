@@ -24,23 +24,30 @@ Figure 1. An Illustration of GBN
 <img src="./pics/results.png" width=100% >
 </div>
 <div align=center>
-Figure 2. Node Classification Results.
+Figure 2. Node Classification Results
 </div>
 
 <div align=center>
-<img src="./pics/dirichlet.png" width=100% >
+<img src="./pics/dirichlet.png" width=80% >
 </div>
 <div align=center>
-Figure 3. Dirichlet energy curve.
+Figure 3. Dirichlet energy curve
 </div>
 
 <div align=center>
-<img src="./pics/smooth.png" width=100% >
+<img src="./pics/smooth.png" width=80% >
 </div>
 <div align=center>
 Figure 4. Node classification accuracy with
 respect to the number of network layers on
-Cora dataset.
+Cora dataset
+</div>
+
+<div align=center>
+<img src="./pics/transfer.png" width=100% >
+</div>
+<div align=center>
+Figure 5. Results of graph transfer task in terms of Mean Squared Error (%)
 </div>
 
 ## Case Study
@@ -48,7 +55,7 @@ Cora dataset.
 <img src="./pics/case.png" width=100% >
 </div>
 <div align=center>
-Figure 5. Case Study
+Figure 6. Case Study
 </div>
 
 ## Citation
